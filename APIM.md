@@ -1,6 +1,6 @@
 # Sharing Our APIs With Others
 
-Return to [Enriching the event's payload](LogicApps.md).
+Return to [Enriching the event's payload](Functions.md).
 
 ---
 

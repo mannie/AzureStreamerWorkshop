@@ -1,6 +1,6 @@
 # Capturing Events In Cosmos DB
 
-Return to [Capturing events in Cosmos DB](Functions.md).
+Return to [Ingesting events into Event Hubs](EventHubs.md).
 
 ---
 
@@ -12,4 +12,4 @@ Phasellus euismod dapibus arcu, at gravida dolor. Curabitur quis gravida turpis.
 
 
 ---
-Move on to [Sharing our APIs with others](APIM.md).
+Move on to [Enriching the event's payload](Functions.md).

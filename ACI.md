@@ -12,4 +12,4 @@ Phasellus euismod dapibus arcu, at gravida dolor. Curabitur quis gravida turpis.
 
 
 ---
-Move on to [Ingesting events into Event Hubs](EventsHubs.md).
+Move on to [Ingesting events into Event Hubs](EventHubs.md).

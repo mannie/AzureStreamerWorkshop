@@ -12,4 +12,4 @@ Phasellus euismod dapibus arcu, at gravida dolor. Curabitur quis gravida turpis.
 
 
 ---
-Move on to [Capturing events in Cosmos DB](Functions.md).
+Move on to [Capturing events in Cosmos DB](LogicApps.md).

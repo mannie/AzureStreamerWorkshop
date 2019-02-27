@@ -1,6 +1,6 @@
 # Enriching The Event Payload
 
-Return to [Ingesting events into Event Hubs](EventsHubs.md).
+Return to [Capturing events in Cosmos DB](LogicApps.md).
 
 ---
 
@@ -12,4 +12,4 @@ Phasellus euismod dapibus arcu, at gravida dolor. Curabitur quis gravida turpis.
 
 
 ---
-Move on to [Enriching the event's payload](LogicApps.md).
+Move on to [Sharing our APIs with others](APIM.md).
