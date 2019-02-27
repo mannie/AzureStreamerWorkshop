@@ -3,12 +3,56 @@
 Return to [Overview](ReadMe.md).
 
 ---
+In this step, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have a an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis tincidunt tellus non fringilla. Aenean at posuere leo. Pellentesque quis velit eu leo accumsan tincidunt fringilla sed nulla. Maecenas dapibus vitae quam at porttitor. Vivamus vitae nisi lectus. Quisque et dui at enim ultricies iaculis. Aenean malesuada metus dui, vel sollicitudin sapien varius quis. Aliquam egestas, enim vitae euismod finibus, metus tellus tristique dui, eget interdum augue magna in nibh. Vestibulum tempus enim ac blandit commodo. Pellentesque enim sem, iaculis vel tempor sit amet, feugiat quis magna. Sed aliquet laoreet ex maximus condimentum. Fusce sed lectus finibus, volutpat nunc dictum, efficitur lacus. Curabitur ac cursus odio, eu consequat massa. Phasellus mi nibh, scelerisque nec pulvinar eget, dignissim accumsan lectus. Sed vitae pellentesque libero.
+1. Create a Virtual Machine via the Azure Portal using the CentOS Linux image. Be sure to enable inbound SSH as part of the creation process.
+1. Once deployment has completed successfully, remote login to your new VM using a variant of the following command:
+  ```sh
+  ssh $user@$hostip # example mannie@123.45.67.89
+  ```
+1. Once we've logged in, the following commands to install Brew:
+  ```sh
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+  echo "export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH" >> .bash_profile
+  source .bash_profile
+  ```
+1. Install Git.
+  ```sh
+  brew install git
+  ```
+1. Install Docker and its dependencies, as per the [Docker documentation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/centos/#install-using-the-repository)).
+  ```sh
+  sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+  sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  sudo yum install -y docker-ce
+  ```
+1. Start the Docker engine.
+  ```sh
+  sudo systemctl start docker
+  ```
+1. Verify that Docker installed correctly by running the `hello-world` image.
+  ```sh
+  sudo docker run hello-world
+  ```
+1. Clone the [Event Streamer](https://github.com/mannie/EventStreamer) app and navigate into the project's root directory.
+  ```sh
+  git clone https://github.com/mannie/EventStreamer.git
+  cd EventStreamer
+  ```
+1. Build the app and run it locally.
+  ```sh
+  sudo docker build --tag streamer .
+  sudo docker run --interactive --tty --rm streamer
+  ```
+1. Create a Container Registry via the Azure Portal.
+1. Deploy the container image into Azure.
+  ```sh
+  registry=address.to.registry # example manniesregistry.azurecr.io
 
-Pellentesque non dapibus ante. Cras in consequat libero. Quisque ac augue ac tellus molestie lacinia. Sed faucibus erat in purus efficitur suscipit. Etiam vehicula consectetur velit. Donec vehicula felis arcu, eu convallis magna vehicula at. Suspendisse tincidunt risus at velit vehicula, in viverra justo tincidunt. Mauris mollis suscipit nisl sed sagittis. Aliquam commodo dolor in risus scelerisque lobortis. Curabitur fermentum ullamcorper diam, auctor porttitor nisl. Nam tincidunt nunc risus, quis bibendum odio congue sit amet. Ut pretium sed nibh eget vehicula. Suspendisse in augue in turpis auctor vehicula non bibendum nibh. Etiam congue enim at orci venenatis viverra. Nunc nec tellus vel neque bibendum posuere. Etiam eget metus ut mauris auctor porta.
-
-Phasellus euismod dapibus arcu, at gravida dolor. Curabitur quis gravida turpis. Donec aliquam at enim vel blandit. Quisque blandit leo id pellentesque tristique. Donec feugiat urna in tempor euismod. Sed convallis cursus velit, in posuere erat scelerisque a. Nunc libero libero, posuere vitae scelerisque id, dapibus eget nulla. Praesent eu magna pretium magna aliquet congue. Proin venenatis eu ante sit amet placerat.
+  sudo docker login $registry
+  sudo docker tag streamer $registry/streamer
+  sudo docker push $registry/streamer
+  ```
 
 
 ---
