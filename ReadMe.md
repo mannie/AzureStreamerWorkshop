@@ -1,0 +1,17 @@
+# Azure Serverless Workshop
+
+Serverless is reshaping the way developers think about software/system architectures. By simplifying infrastructure, technologies such as Functions, Logic Apps, and Event Hubs have made is easier to develop reusable APIs (consumed by mobile, desktop, web, and IoT clients).
+
+The burden of managing infrastructure no longer lies with the developer, leaving them to focus on solving the problem (i.e. writing code) instead of worrying about managing the environment. Infrastructure professionals also benefit from PaaS; thanks to auto-scale and micro-billing, there are financial savings to be realized without sacrificing scalability per demand.
+
+In this workshop, you will develop an end-to-end data streaming/processing solution using a variety of technologies. We will walk through how to deploy an event generation/streaming application into [Azure Container Instances](https://azure.microsoft.com/en-us/services/container-instances/); this app will be the data source of our pipeline. Events will be streamed to [Event Hubs](https://azure.microsoft.com/en-us/services/event-hubs/), after which [Logic Apps](https://azure.microsoft.com/en-us/services/logic-apps/) will respond to each event entering the pipeline, using [Functions](https://azure.microsoft.com/en-us/services/functions/) for data enrichment prior to storing the events in [Cosmos DB](https://azure.microsoft.com/en-us/services/cosmos-db/) for future consumption. [API Management](https://azure.microsoft.com/en-us/services/api-management/) will provide an abstraction layer over our newly created APIs, to support reuse of code by others.
+
+### Target Audience
+* Technical roles (engineers, architects, infrastructure managers, etc.).
+* Anyone interested in automating business processes.
+* Anyone interested in learning about Azure and Serverless.
+
+### Requirements
+* An active [Azure Subscription](https://azure.microsoft.com/en-us/free/).
+* [Postman](https://www.getpostman.com) or a similar HTTP client.
+* An [SSH tunneling](https://www.ssh.com/ssh/tunneling/) capable computer.
