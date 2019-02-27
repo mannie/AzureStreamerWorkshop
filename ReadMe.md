@@ -15,3 +15,11 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 * An active [Azure Subscription](https://azure.microsoft.com/en-us/free/).
 * [Postman](https://www.getpostman.com) or a similar HTTP client.
 * An [SSH tunneling](https://www.ssh.com/ssh/tunneling/) capable computer.
+
+## Getting Started
+1. [Deploying the streaming app into Azure](ACI.md).
+1. [Ingesting events into Event Hubs](EventsHubs.md).
+1. [Capturing events in Cosmos DB](Functions.md).
+1. [Enriching the event's payload](LogicApps.md).
+1. [Sharing our APIs with others](APIM.md).
+1. [Review and next steps](Review.md).
