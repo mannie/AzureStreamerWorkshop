@@ -23,7 +23,7 @@ Sections
 
 
 ## Creating the Staging VM
-*If you already have an active Docker and Git installation, feel free to skip this section.*
+*If you already have an active Docker and Git installation, feel free to [skip this section](#deploying-the-streamer-app).*
 
 1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app. Click on `Create a resource`. In the search box that appears, search for `centos` and select `CentOS 7.6`.
   ![Create a resource](ACI/VM/1.png)
@@ -53,7 +53,7 @@ Sections
 
 
 ## Configuring the VM
-*If you already have an active Docker and Git installation, feel free to skip this section.*
+*If you already have an active Docker and Git installation, feel free to [skip this section](#deploying-the-streamer-app).*
 
 1. Remote login to your new VM via CLI using the login info provided at creation time:
   ```sh
