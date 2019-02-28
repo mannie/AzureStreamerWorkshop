@@ -1,6 +1,8 @@
 # Using Cloud Shell For The First Time
 Return to [Deploying the streaming app into Azure](ACI.md).
 
+
+
 ---
 
 
@@ -16,4 +18,6 @@ Return to [Deploying the streaming app into Azure](ACI.md).
 
 
 ---
+
+
 Move on to [Ingesting events into Event Hubs](EventHubs.md).
