@@ -9,7 +9,56 @@ In this step, we will deploy the streamer app into Azure to run in Container Ins
 
 We will also require access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 
-1. Create a Virtual Machine via the Azure Portal using the CentOS Linux image. Be sure to enable inbound SSH as part of the creation process.
+---
+
+## Creating the Staging VM
+*If you already have an active Docker and Git installation, feel free to skip this section.*
+
+1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app:
+  1. Click on `Create a resource`.
+  1. In the search box that appears, search for `centos`.
+  1. Select `CentOS 7.6`.
+
+  ![Create a resource](ACI/VM/1.png)
+
+1. You should be presented with a panel describing the service you're going to create; click `Create`.
+  ![Create](ACI/VM/2.png)
+
+1. Complete the form with information about the VM you want to create, ensuring that you:
+  1. create a new resource group for your VM;
+  1. give your VM a name;
+  1. select a region close you your current location (or another preferred location);
+  1. set the authentication type to `password`, providing a valid username and password;
+  1. select SSH as a public inbound port.
+
+  Once you have filled the form in, click `Review + create`.
+
+  ![Review + create](ACI/VM/3.png)
+
+1. You will be asked to review the configuration of your VM; click `Create`.
+  ![Create](ACI/VM/4.png)
+
+1. Once the VM has completed deploying, click `Go to resource`.
+  ![Go to resource](ACI/VM/5.png)
+
+1. In order to log into the VM, will need to obtain its IP address. While on the overview section of the VM, click on `Connect`.
+  ![Connect](ACI/VM/6.png)
+
+1. Select `SSH` from the panel that appears, and copy the login information (for later use) which should look something like:
+  ```sh
+  ssh mannie@123.45.67.89
+  ```
+  ![Copy SSH login](ACI/VM/7.png)
+
+
+
+---
+
+
+
+## Configuring the VM
+*If you already have an active Docker and Git installation, feel free to skip this section.*
+
 1. Once deployment has completed successfully, remote login to your new VM using a variant of the following command:
   ```sh
   ssh $user@$hostip # example mannie@123.45.67.89
@@ -20,6 +69,7 @@ We will also require access to command line interface (CLI) that is capable of [
   echo "export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH" >> .bash_profile
   source .bash_profile
   ```
+
 1. Install Git.
   ```sh
   brew install git
@@ -38,6 +88,15 @@ We will also require access to command line interface (CLI) that is capable of [
   ```sh
   sudo docker run hello-world
   ```
+
+
+
+---
+
+
+
+## Deploying the Streamer App
+
 1. Clone the [Event Streamer](https://github.com/mannie/EventStreamer) app and navigate into the project's root directory.
   ```sh
   git clone https://github.com/mannie/EventStreamer.git
