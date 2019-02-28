@@ -18,7 +18,6 @@ We will also require access to command line interface (CLI) that is capable of [
   - Click on `Create a resource`.
   - In the search box that appears, search for `centos`.
   - Select `CentOS 7.6`.
-  
   ![Create a resource](ACI/VM/1.png)
 
 1. You should be presented with a panel describing the service you're going to create; click `Create`.
@@ -30,9 +29,7 @@ We will also require access to command line interface (CLI) that is capable of [
   - select a region close you your current location (or another preferred location);
   - set the authentication type to `password`, providing a valid username and password;
   - select SSH as a public inbound port.
-
   Once you have filled the form in, click `Review + create`.
-
   ![Review + create](ACI/VM/3.png)
 
 1. You will be asked to review the configuration of your VM; click `Create`.
@@ -44,10 +41,7 @@ We will also require access to command line interface (CLI) that is capable of [
 1. In order to log into the VM, will need to obtain its IP address. While on the overview section of the VM, click on `Connect`.
   ![Connect](ACI/VM/6.png)
 
-1. Select `SSH` from the panel that appears, and copy the login information (for later use) which should look something like:
-  ```sh
-  ssh mannie@123.45.67.89
-  ```
+1. Select `SSH` from the panel that appears, and copy the login information (for later use) which should look something like `ssh mannie@123.45.67.89`.
   ![Copy SSH login](ACI/VM/7.png)
 
 
