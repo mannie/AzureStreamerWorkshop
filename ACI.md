@@ -1,6 +1,8 @@
 # Deploying The Streaming App Into Azure
 Return to [Overview](ReadMe.md).
 
+
+
 ---
 
 
@@ -9,7 +11,16 @@ In this step, we will deploy the streamer app into Azure to run in Container Ins
 
 We will also require access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 
+Sections
+1. [Creating the Staging VM](#creating-the-staging-vm)
+1. [Configuring the VM](#configuring-the-vm)
+1. [Deploying the Streamer App](#deploying-the-streamer-app)
+
+
+
 ---
+
+
 
 ## Creating the Staging VM
 *If you already have an active Docker and Git installation, feel free to skip this section.*
@@ -105,4 +116,6 @@ We will also require access to command line interface (CLI) that is capable of [
 
 
 ---
+
+
 Move on to [Ingesting events into Event Hubs](EventHubs.md).
