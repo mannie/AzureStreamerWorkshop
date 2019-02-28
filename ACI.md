@@ -1,9 +1,13 @@
 # Deploying The Streaming App Into Azure
-
 Return to [Overview](ReadMe.md).
 
 ---
+
+
+
 In this step, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have a an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+
+We will also require access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 
 1. Create a Virtual Machine via the Azure Portal using the CentOS Linux image. Be sure to enable inbound SSH as part of the creation process.
 1. Once deployment has completed successfully, remote login to your new VM using a variant of the following command:
@@ -53,6 +57,7 @@ In this step, we will deploy the streamer app into Azure to run in Container Ins
   sudo docker tag streamer $registry/streamer
   sudo docker push $registry/streamer
   ```
+
 
 
 ---
