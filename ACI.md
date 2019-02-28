@@ -14,22 +14,13 @@ We will also require access to command line interface (CLI) that is capable of [
 ## Creating the Staging VM
 *If you already have an active Docker and Git installation, feel free to skip this section.*
 
-1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app:
-  - Click on `Create a resource`.
-  - In the search box that appears, search for `centos`.
-  - Select `CentOS 7.6`.
+1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app. Click on `Create a resource`. In the search box that appears, search for `centos` and select `CentOS 7.6`.
   ![Create a resource](ACI/VM/1.png)
 
 1. You should be presented with a panel describing the service you're going to create; click `Create`.
   ![Create](ACI/VM/2.png)
 
-1. Complete the form with information about the VM you want to create, ensuring that you:
-  - create a new resource group for your VM;
-  - give your VM a name;
-  - select a region close you your current location (or another preferred location);
-  - set the authentication type to `password`, providing a valid username and password;
-  - select SSH as a public inbound port.
-  Once you have filled the form in, click `Review + create`.
+1. Complete the form with information about the VM you want to create, ensuring that you create a new resource group for your VM. Give your VM a name and select a region close to your current location (or another preferred location). Set the authentication type to `password` and provid a valid username-password pair. You will also want to make sure that SSH is selected as a public inbound port. Once you have filled the form in, click `Review + create`.
   ![Review + create](ACI/VM/3.png)
 
 1. You will be asked to review the configuration of your VM; click `Create`.
