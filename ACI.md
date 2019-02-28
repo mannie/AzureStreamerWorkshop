@@ -31,7 +31,7 @@ Sections
 1. You should be presented with a panel describing the service you're going to create; click `Create`.
   ![Create](ACI/VM/2.png)
 
-1. Complete the form with information about the VM you want to create, ensuring that you create a new resource group for your VM. Give your VM a name and select a region close to your current location (or another preferred location). Set the authentication type to `password` and provid a valid username-password pair. You will also want to make sure that SSH is selected as a public inbound port. Once you have filled the form in, click `Review + create`.
+1. Complete the form with information about the VM you want to create, ensuring that you create a new resource group for your VM. Give your VM a name and select a region close to your current location (or another preferred location). Set the authentication type to `password` and provide a valid username-password pair. You will also want to make sure that SSH is selected as a public inbound port. Once you have filled the form in, click `Review + create`.
   ![Review + create](ACI/VM/3.png)
 
 1. You will be asked to review the configuration of your VM; click `Create`.
@@ -55,22 +55,19 @@ Sections
 ## Configuring the VM
 *If you already have an active Docker and Git installation, feel free to [skip this section](#deploying-the-streamer-app).*
 
-1. Remote login to your new VM via CLI using the login info provided at creation time:
+1. SSH into your new VM via CLI using the login info provided at creation time:
   ```sh
   ssh $user@$hostip # example mannie@123.45.67.89
   ```
-1. Once we've logged in, the following commands to install Brew:
-  ```sh
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-  echo "export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH" >> .bash_profile
-  source .bash_profile
+  You will receive a message (similar to this) asking you to confirm that you want to connect to the VM.
   ```
+  The authenticity of host '40.84.44.109 (40.84.44.109)' can't be established.
+  ECDSA key fingerprint is SHA256:4fYn6C2yelIAsds34GSDGTRgMrhT27Zcdfgytew45F3g.
+  Are you sure you want to continue connecting (yes/no)?
+  ```
+  To confirm that you want to continue accessing the VM, type `yes` and hit `Enter`.
 
-1. Install Git.
-  ```sh
-  brew install git
-  ```
-1. Install Docker and its dependencies, as per the [Docker documentation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/centos/#install-using-the-repository)).
+1. Once you've successfully logged in, the following commands to install Docker and its dependencies, as per the [Docker documentation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/centos/#install-using-the-repository)). You will be prompted for your password and for confirmation; enter it and hit `Enter`.
   ```sh
   sudo yum install -y yum-utils device-mapper-persistent-data lvm2
   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -84,6 +81,42 @@ Sections
   ```sh
   sudo docker run hello-world
   ```
+  You should see some output similar to the following (this confirms that Docker is correctly installed):
+  ```
+  Hello from Docker!
+  This message shows that your installation appears to be working correctly.
+
+  To generate this message, Docker took the following steps:
+   1. The Docker client contacted the Docker daemon.
+   2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+      (amd64)
+   3. The Docker daemon created a new container from that image which runs the
+      executable that produces the output you are currently reading.
+   4. The Docker daemon streamed that output to the Docker client, which sent it
+      to your terminal.
+
+  To try something more ambitious, you can run an Ubuntu container with:
+   $ docker run -it ubuntu bash
+
+  Share images, automate workflows, and more with a free Docker ID:
+   https://hub.docker.com/
+
+  For more examples and ideas, visit:
+   https://docs.docker.com/get-started/
+   ```
+
+1. Install the Git SCM tool so that we can obtain a local copy of the streamer app later.
+  ```sh
+  sudo yum install -y git
+  ```
+  Use the following command to confirm the installation...
+  ```sh
+  which git
+  ```
+  ...which should yield the following result:
+  ```
+  /usr/bin/git
+  ```  
 
 
 
