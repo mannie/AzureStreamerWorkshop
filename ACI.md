@@ -15,21 +15,21 @@ We will also require access to command line interface (CLI) that is capable of [
 *If you already have an active Docker and Git installation, feel free to skip this section.*
 
 1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app:
-  1. Click on `Create a resource`.
-  1. In the search box that appears, search for `centos`.
-  1. Select `CentOS 7.6`.
-
+  - Click on `Create a resource`.
+  - In the search box that appears, search for `centos`.
+  - Select `CentOS 7.6`.
+  
   ![Create a resource](ACI/VM/1.png)
 
 1. You should be presented with a panel describing the service you're going to create; click `Create`.
   ![Create](ACI/VM/2.png)
 
 1. Complete the form with information about the VM you want to create, ensuring that you:
-  1. create a new resource group for your VM;
-  1. give your VM a name;
-  1. select a region close you your current location (or another preferred location);
-  1. set the authentication type to `password`, providing a valid username and password;
-  1. select SSH as a public inbound port.
+  - create a new resource group for your VM;
+  - give your VM a name;
+  - select a region close you your current location (or another preferred location);
+  - set the authentication type to `password`, providing a valid username and password;
+  - select SSH as a public inbound port.
 
   Once you have filled the form in, click `Review + create`.
 
@@ -59,7 +59,7 @@ We will also require access to command line interface (CLI) that is capable of [
 ## Configuring the VM
 *If you already have an active Docker and Git installation, feel free to skip this section.*
 
-1. Once deployment has completed successfully, remote login to your new VM using a variant of the following command:
+1. Remote login to your new VM via CLI using the login info provided at creation time:
   ```sh
   ssh $user@$hostip # example mannie@123.45.67.89
   ```
