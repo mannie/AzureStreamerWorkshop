@@ -7,11 +7,11 @@ Return to [Overview](ReadMe.md).
 
 
 
-In this step, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+In this sections, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
 
 We will also require access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 
-Sections
+**Section Outline**
 1. [Creating the Staging VM](#creating-the-staging-vm)
 1. [Configuring the VM](#configuring-the-vm)
 1. [Obtaining the Streamer App](#obtaining-the-streamer-app)
@@ -24,7 +24,7 @@ Sections
 
 
 ## Creating the Staging VM
-*If you already have an active Docker and Git installation, feel free to [skip this section](#obtaining-the-streamer-app).*
+*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
 1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app. Click on `Create a resource`. In the search box that appears, search for `centos` and select `CentOS 7.6`.
   ![Create a resource](ACI/VM/1.png)
@@ -54,7 +54,7 @@ Sections
 
 
 ## Configuring the VM
-*If you already have an active Docker and Git installation, feel free to [skip this section](#obtaining-the-streamer-app).*
+*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
 1. SSH into your new VM via CLI using the login info provided at creation time:
     ```sh
@@ -250,6 +250,7 @@ Sections
 
 
 ---
+
 
 
 Move on to [Ingesting events into Event Hubs](EventHubs.md).
