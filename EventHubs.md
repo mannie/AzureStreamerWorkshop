@@ -11,7 +11,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 **Section Outline**
 1. [Creating an Event Hub](#creating-an-event-hub)
-1. [Updating the Streamer App](#updating-an-event-hub)
+1. [Updating the Streamer App](#updating-an-streamer-app)
 
 
 
