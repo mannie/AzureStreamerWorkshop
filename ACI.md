@@ -7,7 +7,7 @@ Return to [Overview](ReadMe.md).
 
 
 
-In this step, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have a an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+In this step, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
 
 We will also require access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 
@@ -74,12 +74,12 @@ Sections
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum install -y docker-ce
     ```
-  
+
 1. Start the Docker engine.
     ```sh
     sudo systemctl start docker
     ```
-  
+
 1. Verify that Docker installed correctly by running the `hello-world` image.
     ```sh
     sudo docker run hello-world
@@ -152,7 +152,7 @@ Sections
     ```
     Dockerfile  EventStreamer.xcodeproj/  Package.swift  README.md  Sources/  Tests/
     ```
-    
+
 1. Build the app and run it locally.
     ```sh
     sudo docker build --tag streamer .
