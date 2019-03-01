@@ -22,4 +22,4 @@ In this section, we will walk through how to get started using the Azure Cloud S
 ---
 
 
-Move on to [Ingesting events into Event Hubs](EventHubs.md).
+Return to [Deploying the streaming app into Azure](ACI.md).
