@@ -10,8 +10,8 @@ Return to [Deploying the streaming app into Azure](ACI.md).
 In this section, we will create and configure our Event Hub to ingest data from our streamer app and publish it to subscribers. Configuring subscribers is the topic of the next section: [Capturing events in Cosmos DB](LogicApps.md).
 
 **Section Outline**
-1. [Creating an Event Hub](#)
-1. [Updating the Streamer App](#)
+1. [Creating an Event Hub](#creating-an-event-hub)
+1. [Updating the Streamer App](#updating-an-event-hub)
 
 
 
