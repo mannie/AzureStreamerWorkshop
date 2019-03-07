@@ -191,7 +191,24 @@ In this section, we will create a Logic App to respond to each event being strea
 1. Feel free to inspect the recent execution via the `Runs history` section of the `Overview` blade. Remember, if the `Runs history` isn't showing any activity, click the `Refresh` button located above the `Runs history` section.
   ![Runs history](LogicApps/Enrich/17.png)
 
-1. To inspect the save documents in Cosmos DB, head on over to the `Data Explorer` on your Cosmos DB resource. Select the database, the collection, then the `Documents` option. You will find a list of the persisted documents; click to view any of the documents to inspect.
+1. To inspect the save documents in Cosmos DB, head on over to the `Data Explorer` on your Cosmos DB resource. Select the database, the collection, then the `Documents` option. You will find a list of the persisted documents; click to view any of the documents to inspect. The document should look like this (with a few additional properties prefixed by an underscore):
+    ```json
+    {
+        "event": {
+            "name": "deposit",
+            "current": 999,
+            "timestamp": 1551465599,
+            "previous": 1000,
+            "initial": 1000
+        },
+        "id": "34634-5535768",
+        "properties": {
+            "x-opt-sequence-number": 34634,
+            "x-opt-offset": "5535768",
+            "x-opt-enqueued-time": "2019-03-01T18:39:59.942Z"
+        }
+    }
+    ```
   ![Cosmos DB Data Explorer](LogicApps/Enrich/18.png)
 
 
