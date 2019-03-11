@@ -128,7 +128,7 @@ Note: *If you were directed here an effort to preload the service, please retur
 1. Again, can see the output of our request here. Tou can also step into the `Trace` to see where the URI is being rewritten.
   ![Logs](APIM/Import/14.png)
 
-1. x
+1. To view a policy that has rate limiting enabled, head on over to the `Products` section of the service and select the `Starter` product. Would you like to add try adding rate limiting to your service? Give it a go...
   ![Additional policies](APIM/Import/15.png)
 
 
