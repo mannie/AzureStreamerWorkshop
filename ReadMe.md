@@ -13,7 +13,6 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 
 ### Requirements
 * An active [Azure Subscription](https://azure.microsoft.com/en-us/free/).
-* [Postman](https://www.getpostman.com) or a similar HTTP client.
 * An internet enabled computer.
 
 ## Getting Started
