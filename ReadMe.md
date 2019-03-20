@@ -27,4 +27,6 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 
 **Note**: it may be worth preloading your API Management service as this service typically take a little while to set up; for more info on how to create your API Management service, see [Creating the API Management Service](APIM.md#creating-the-api-management-service).
 
+---
+
 ![Workshop](Workshop.gif)
