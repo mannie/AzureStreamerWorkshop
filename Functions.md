@@ -76,7 +76,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
             : new BadRequestObjectResult(null);
     }
     ```
-  ![Code](Functions/Function/7.png)
+    ![Code](Functions/Function/7.png)
 
 1. Set the HTTP method to `POST` and the request body to `{ "timestamp" : 1552053470 }`. The code also supports `GET`; feel free to experiement a little with the available options. Click `Run` to execute the function with the provided params; you should see the string dateTime along with some additional logs.
   ![Test API](Functions/Function/8.png)
@@ -129,13 +129,13 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     ```
     addProperty(triggerBody()?['ContentData'], 'datetime', )
     ```
-  ![Name or property](Functions/Logic/13.png)
+    ![Name or property](Functions/Logic/13.png)
 
 1. Ensuring our keyboard's cursor is between the last comma and closing parentheses, click on the `Body` value resulting from the function call. Before clicking `OK`, ensure that your expression reads:
     ```
     addProperty(triggerBody()?['ContentData'], 'datetime', body('HttpTrigger1'))
     ```
-  ![Value or property](Functions/Logic/14.png)
+    ![Value or property](Functions/Logic/14.png)
 
 1. Remove the current document value being persisted to Cosmos DB by expanding the collapsed action and clicking on the `x` associated with the document value.
   ![Remove current document](Functions/Logic/15.png)
