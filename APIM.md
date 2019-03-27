@@ -111,7 +111,7 @@ Note: *If you were directed here an effort to preload the service, please retur
         }
     }
     ```
-  ![Update metadata](APIM/Import/10.png)
+    ![Update metadata](APIM/Import/10.png)
 
 1. What did we just do in the previous step? We updated the description of each operation and provided information on expected inputs (query parameters and body). We  also changed the signature of the endpoints from `/HttpTrigger1` to `/ConvertTimestamp`; these changes should now be visible in the endpoint listing. We need to make one more change before our revised endpoints are functional. Click on `+ Add policy` in the `Inbound processing` section.
   ![Add policy](APIM/Import/11.png)
@@ -120,7 +120,7 @@ Note: *If you were directed here an effort to preload the service, please retur
     ```xml
     <rewrite-uri template="/HttpTrigger1" />
     ```
-  ![Rewrite URI policy](APIM/Import/12.png)
+    ![Rewrite URI policy](APIM/Import/12.png)
 
 1. Head back to our `Test` section to test out the changes we just made. You'll notice that some information is already preloaded; this is the result of the JSON update (for the API definition) we made earlier.
   ![Test changes](APIM/Import/13.png)
