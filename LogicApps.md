@@ -113,7 +113,7 @@ In this section, we will create a Logic App to respond to each event being strea
         "initial": 1000
     }
     ```
-  ![Examine previous run](LogicApps/Logic/11.png)
+    ![Examine previous run](LogicApps/Logic/11.png)
 
 
 
@@ -168,7 +168,7 @@ In this section, we will create a Logic App to respond to each event being strea
         "initial": 1000
     }
     ```
-  ![Use sample payload to generate schema](LogicApps/Enrich/10.png)
+    ![Use sample payload to generate schema](LogicApps/Enrich/10.png)
 
 1. Now we can persist our document into Cosmos DB. Click `+ New step`.
   ![New step](LogicApps/Enrich/11.png)
@@ -209,7 +209,7 @@ In this section, we will create a Logic App to respond to each event being strea
         }
     }
     ```
-  ![Cosmos DB Data Explorer](LogicApps/Enrich/18.png)
+    ![Cosmos DB Data Explorer](LogicApps/Enrich/18.png)
 
 
 
