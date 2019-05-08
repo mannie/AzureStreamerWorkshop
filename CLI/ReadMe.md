@@ -1,5 +1,5 @@
 # Azure Streamer Workshop
-Return to [Introduction](../../ReadMe.md).
+Return to [Introduction](../ReadMe.md).
 
 Serverless is reshaping the way developers think about software/system architectures. By simplifying infrastructure, technologies such as Functions, Logic Apps, and Event Hubs have made is easier to develop reusable APIs (consumed by mobile, desktop, web, and IoT clients).
 
