@@ -23,63 +23,243 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 
 ## Creating the Function App
 
-1. Click on `Create a resource` and find the `Function App` resource.
-  ![Create a resource](Functions/Function/1.png)
-
-1. After the service summary, click `Create`.
-  ![Create](Functions/Function/2.png)
-
-1. Fill in the form giving the app a globally unique name. Select the resource group for the workshop, a preferred location, and reuse the storage account that we already have in our resource group. If you want to collect logs (which is very useful), be sure to enable Application Insights: give your Insights resource a name, location, and click `Apply`. If validation is successful, hit `Create`.
-  ![Fill in form](Functions/Function/3.png)
-
-1. On successful deployment, open your Function App and click on `+ New function`.
-  ![New function](Functions/Function/4.png)
-
-1. We have different ways to develop and deploy our API. For production workloads, we would typically select the options for local development, which allow us to version our code and build out a CI/CD pipeline. For the purposes of this workshop, we will be doing everything `In-portal`; make the appropriate selection and click `Continue`.
-  ![In-portal](Functions/Function/5.png)
-
-1. Select `Webhook + API` and click `Create`. This will allow us to create a REST API that we can `GET` or `POST` to.
-  ![Webhook + API](Functions/Function/6.png)
-
-1. Paste the following code into the editor and hit `Save`. Open the `Test` panel so that we can validate our API's behaviour after.
-    ```csx
-    #r "Newtonsoft.Json"
-
-    using System.Net;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Primitives;
-    using Newtonsoft.Json;
-
-    public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
+1. x
+    ```sh
+    # __LocalHost__
+    storage=__globally_unique_name__ # example: storage=streamerclistorage
+    az storage account create \
+        --name $storage \
+        --resource-group $group \
+        --kind StorageV2 \
+        --location $location \
+        --sku Standard_GRS
+    ```
+    ```json
     {
-        log.LogInformation("C# HTTP trigger function processed a request.");
-
-        // Obtain the "timestamp" query param from the URL: "http://...?timestamp=1552053470"
-        string value = req.Query["timestamp"];
-
-        // If we don't have a "timestamp" query param, try and read the request's body to find one
-        // { "timestamp" : 1552053470, ... }
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-        dynamic data = JsonConvert.DeserializeObject(requestBody);
-        value = value ?? data?.timestamp;
-
-        // Convert the "timestamp" from a string to an int
-        var timestamp = Convert.ToInt64(value);
-
-        // Convert the offset to a DateTime object.
-        DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(timestamp);
-        DateTime dateTime = dateTimeOffset.UtcDateTime;
-
-        // Return the human readable dateTime in the response body.
-        return dateTime != null
-            ? (ActionResult)new OkObjectResult(dateTime)
-            : new BadRequestObjectResult(null);
+      "accessTier": "Hot",
+      "creationTime": "2019-05-06T16:56:04.317512+00:00",
+      "customDomain": null,
+      "enableAzureFilesAadIntegration": null,
+      "enableHttpsTrafficOnly": false,
+      "encryption": { ... },
+      "failoverInProgress": null,
+      "geoReplicationStats": null,
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Storage/storageAccounts/streamerclistorage",
+      "identity": null,
+      "isHnsEnabled": null,
+      "kind": "StorageV2",
+      "lastGeoFailoverTime": null,
+      "location": "eastus2",
+      "name": "streamerclistorage",
+      "networkRuleSet": { ... },
+      "primaryEndpoints": { ... },
+      "primaryLocation": "eastus2",
+      "provisioningState": "Succeeded",
+      "resourceGroup": "StreamerCLI",
+      "secondaryEndpoints": null,
+      "secondaryLocation": "centralus",
+      "sku": { ... },
+      "statusOfPrimary": "available",
+      "statusOfSecondary": "available",
+      "tags": {},
+      "type": "Microsoft.Storage/storageAccounts"
     }
     ```
-    ![Code](Functions/Function/7.png)
 
-1. Set the HTTP method to `POST` and the request body to `{ "timestamp" : 1552053470 }`. The code also supports `GET`; feel free to experiement a little with the available options. Click `Run` to execute the function with the provided params; you should see the string dateTime along with some additional logs.
-  ![Test API](Functions/Function/8.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az extension add --name application-insights
+
+    insights=__name__ # example: insights=streamercli-insights
+    az monitor app-insights component create \
+        --app $insights \
+        --location $location \
+        --resource-group $group
+    ```
+    ```json
+    {
+      "appId": "bd97c007-1b12-4b07-b784-123e75168fdc",
+      "applicationId": "streamercli-insights",
+      "applicationType": "web",
+      "creationDate": "2019-05-06T16:43:38.720475+00:00",
+      "etag": "\"fd05d44c-0000-0200-0000-5cd0643a0000\"",
+      "flowType": "Bluefield",
+      "hockeyAppId": null,
+      "hockeyAppToken": null,
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/microsoft.insights/components/streamercli-insights",
+      "instrumentationKey": "5d45b2ed-6c9d-4c19-9679-6e53d4a81cd4",
+      "kind": "web",
+      "location": "eastus2",
+      "name": "streamercli-insights",
+      "provisioningState": "Succeeded",
+      "requestSource": "rest",
+      "resourceGroup": "StreamerCLI",
+      "samplingPercentage": null,
+      "tags": {},
+      "tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "type": "microsoft.insights/components"
+    }
+    ```
+
+1. x
+    ```sh
+    # __LocalHost__
+    functionapp=__globally_unique_name__ #example: functionapp=streamercli-utils
+    az functionapp create \
+        --name $functionapp \
+        --resource-group $group \
+        --storage-account $storage \
+        --app-insights $insights \
+        --consumption-plan-location $location \
+        --runtime dotnet
+    ```
+
+    ```json
+    {
+      "availabilityState": "Normal",
+      "clientAffinityEnabled": false,
+      "clientCertEnabled": false,
+      "clientCertExclusionPaths": null,
+      "cloningInfo": null,
+      "containerSize": 1536,
+      "dailyMemoryTimeQuota": 0,
+      "defaultHostName": "streamercli-utils.azurewebsites.net",
+      "enabled": true,
+      "enabledHostNames": [ ... ],
+      "geoDistributions": null,
+      "hostNameSslStates": [ ... ],
+      "hostNames": [ ... ],
+      "hostNamesDisabled": false,
+      "hostingEnvironmentProfile": null,
+      "httpsOnly": false,
+      "hyperV": false,
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/sites/streamercli-utils",
+      "identity": null,
+      "inProgressOperationId": null,
+      "isDefaultContainer": null,
+      "isXenon": false,
+      "kind": "functionapp",
+      "lastModifiedTimeUtc": "2019-05-06T16:57:35.943333",
+      "location": "eastus2",
+      "maxNumberOfWorkers": null,
+      "name": "streamercli-utils",
+      "outboundIpAddresses": "40.79.65.200,13.77.81.108,40.84.48.10,40.84.50.170,52.232.186.45",
+      "possibleOutboundIpAddresses": "40.79.65.200,13.77.81.108,40.84.48.10,40.84.50.170,52.232.186.45,52.177.188.196,13.68.100.91",
+      "redundancyMode": "None",
+      "repositorySiteName": "streamercli-utils",
+      "reserved": false,
+      "resourceGroup": "StreamerCLI",
+      "scmSiteAlsoStopped": false,
+      "serverFarmId": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/serverfarms/EastUS2Plan",
+      "siteConfig": null,
+      "slotSwapStatus": null,
+      "state": "Running",
+      "suspendedTill": null,
+      "tags": null,
+      "targetSwapSlot": null,
+      "trafficManagerHostNames": null,
+      "type": "Microsoft.Web/sites",
+      "usageState": "Normal"
+    }
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    functionsDev=__name_of_directory_for_functions_development__ # example: functionsDev=StreamerUtils
+    cd && func init $functionsDev --csx
+    ```
+    ```
+    Writing .gitignore
+    Writing host.json
+    Writing local.settings.json
+    Writing /home/mannie/StreamerUtils/.vscode/extensions.json
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    cd $functionsDev && ls
+    ```
+    ```
+    host.json  local.settings.json
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    func new --name HttpTrigger1 --template HttpTrigger --csx
+    ```
+    ```
+    Select a template: HttpTrigger
+    Function name: [HttpTrigger] Writing /home/mannie/StreamerUtils/HttpTrigger1/readme.md
+    Writing /home/mannie/StreamerUtils/HttpTrigger1/run.csx
+    Writing /home/mannie/StreamerUtils/HttpTrigger1/function.json
+    The function "HttpTrigger1" was created successfully from the "HttpTrigger" template.
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    curl --silent --show-error --output HttpTrigger1/run.csx https://github.com/mannie/AzureStreamerWorkshop/blob/cli/CLI/Functions/Function.csx
+    ```   
+
+1. x
+    ```sh
+    # __RemoteHost__
+    func host start --build --csx
+    ```
+    ```
+    ...
+    Hosting environment: Production
+    Content root path: /home/mannie/StreamerUtils
+    Now listening on: http://0.0.0.0:7071
+    Application started. Press Ctrl+C to shut down.
+
+    Http Functions:
+
+    	HttpTrigger1: [GET,POST] http://localhost:7071/api/HttpTrigger1
+
+    ...
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    developmentAPI=__url_to_localhost__ # example: localURL=http://localhost:7071/api/HttpTrigger1
+    echo $(curl --silent --show-error "$developmentAPI?timestamp=1557169059")
+    ```
+    ```
+    "2019-05-06T18:57:39Z"
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    functionapp=__name_of_function_app_in_azure__ # example: functionapp=streamercli-utils
+    func azure functionapp publish $functionapp
+    ```
+    ```
+    Getting site publishing info...
+    Creating archive for current directory...
+    Uploading 1.49 KB [###############################################################################]
+    Upload completed successfully.
+    Deployment completed successfully.
+    Syncing triggers...
+    Functions in streamercli-utils:
+        HttpTrigger1 - [httpTrigger]
+            Invoke url: https://streamercli-utils.azurewebsites.net/api/httptrigger1?code=asfOR34rweWrBS264qTmwU9JHSnAeXtBBC39H4DJa1wD9Gy3neF70Q==
+    ```
+
+1. x
+    ```sh
+    productionAPI=__invoke_url_shown_after_publishing__ # example: productionAPI=productionURL=https://streamercli-utils.azurewebsites.net/api/httptrigger1?code=asfOR34rweWrBS264qTmwU9JHSnAeXtBBC39H4DJa1wD9Gy3neF70Q==
+    echo $(curl --silent --show-error "$productionAPI&timestamp=1557169059")
+    ```
+    ```
+    "2019-05-06T18:57:39Z"
+    ```
 
 
 
@@ -89,68 +269,46 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 
 ## Updating the Logic App
 
-1. Let's return to our Logic App; open it for editing.
-  ![Edit](Functions/Logic/1.png)
-
-1. `Add an action` just before the Cosmos DB action.
-  ![Add an action](Functions/Logic/2.png)
-
-1. Find the `Azure Functions` grouping.
-  ![Azure Functions](Functions/Logic/3.png)
-
-1. Select the Function app that we created in the previous step.
-  ![Select the Function app](Functions/Logic/4.png)
-
-1. Select the function we created. You'll notice that it has a weird name (`HttpTrigger1`); this is due to how we created the function. We took a shortcut, effectively skipping the step where we would provide a custom name to our API. *This is somewhat representative of what we see in the real world; APIs don't always have the signature we want them to have and changing these signatures is sometimes expensive (or even impossible). Later in the workshop, we will provide a better name to our API via the API Management service.*
-  ![Select the function](Functions/Logic/5.png)
-
-1. Update the function's request body to `{ "timestamp" : $timestamp }`, where `$timestamp` is a value extracted by the preceding `Parse JSON` action.
-  ![Update the function's request body](Functions/Logic/6.png)
-
-1. Set the HTTP method of the function call to `POST`. Click on `Add new parameter`, select `Method`, and then `POST`.
-  ![Add new parameter](Functions/Logic/7.png)
-
-1. Now we will need to update the payload being stored in Cosmos DB to include a new `event.datetime` value. `Add an action` immediately after the function call.
-  ![Add an action](Functions/Logic/8.png)
-
-1. Find the `Compose` action.
-  ![Compose](Functions/Logic/9.png)
-
-1. Copy the body of the preceding `Compose` action into this new action, excluding the value for `event`. Click on where the value of `event` should be, then click on `Expression` from the dynamic content popover.
-   ![Recompose](Functions/Logic/10.png)
-
-1. We will add a new property `datetime` to the Event Hub trigger's `Content` value. Type `addProperty()` into the formula text field. The `addProperty()` *expression function* expects 3 parameters (in order): the `collection` to add the property to, the `name` of the property, and the `value` of the property.
-  ![addProperty](Functions/Logic/11.png)
-
-1. Click over to the `Dynamic content` tab of the popover; ensure that your keyboard curser is between the `addProperty()` parentheses (i.e. where `_` is in `addProperty(_)`). Select the Event Hub's `Content` as the first parameter (the collection) of our invocation to `addProperty()`.
-  ![Collection](Functions/Logic/12.png)
-
-1. Add the second parameter (the name of the property) to our `addProperty()` invocation. Add the following text just before the closing parentheses: `, 'datetime', `. Our expression should look like:
+1. x
+    ```sh
+    # __LocalHost__
+    az group deployment create \
+        --resource-group $group \
+        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.3.arm.json \
+        --parameters "{ \
+                'eventhubs_hub_name' : { 'value' : '$eventhub' }, \
+                'cosmosdb_database_name' : { 'value' : '$db' }, \
+                'cosmosdb_collection_name' : { 'value' : '$collection' }, \
+                'functions_utils_name' : { 'value' : '$functionapp' } \
+            }"
     ```
-    addProperty(triggerBody()?['ContentData'], 'datetime', )
+    ```json
+    {
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.3.arm",
+      "location": null,
+      "name": "CaptureEvents.3.arm",
+      "properties": {
+        "correlationId": "c9edddc8-96b6-47ad-9854-26fb42fcbd3e",
+        "debugSetting": null,
+        "dependencies": [],
+        "duration": "PT8.472888S",
+        "mode": "Incremental",
+        "onErrorDeployment": null,
+        "outputResources": [ ... ],
+        "outputs": null,
+        "parameters": { ... },
+        "parametersLink": null,
+        "providers": [ ... ],
+        "provisioningState": "Succeeded",
+        "template": null,
+        "templateHash": "15022800234738448989",
+        "templateLink": null,
+        "timestamp": "2019-05-10T22:53:51.504709+00:00"
+      },
+      "resourceGroup": "StreamerCLI",
+      "type": null
+    }
     ```
-    ![Name or property](Functions/Logic/13.png)
-
-1. Ensuring our keyboard's cursor is between the last comma and closing parentheses, click on the `Body` value resulting from the function call. Before clicking `OK`, ensure that your expression reads:
-    ```
-    addProperty(triggerBody()?['ContentData'], 'datetime', body('HttpTrigger1'))
-    ```
-    ![Value or property](Functions/Logic/14.png)
-
-1. Remove the current document value being persisted to Cosmos DB by expanding the collapsed action and clicking on the `x` associated with the document value.
-  ![Remove current document](Functions/Logic/15.png)
-
-1. Since the output of the old `Compose` action is no longer in use, we can now remove it and make our Logic App a little cleaner. Find the old `Compose` action. Click on the action's `...` and select the `Delete` option.
-  ![Delete old composer](Functions/Logic/16.png)
-
-1. Confirm the deletion when prompted: `OK`.
-  ![Confirm deletion](Functions/Logic/17.png)
-
-1. Set the output of our new `Compose` action as the new document to persist into Cosmos DB.
-  ![Set Cosmos DB document](Functions/Logic/18.png)
-
-1. `Save` your Logic App before navigating out of the editor.
-  ![Save](Functions/Logic/19.png)
 
 1. Inspecting the logs for events processed after updating our Cosmos DB payload, we can see that a new `event.datetime` property exists.
   ![Runs history](Functions/Logic/20.png)

@@ -1,32 +1,98 @@
-# Azure Streamer Workshop
+# Command Line Interface
+Return to [Introduction](../ReadMe.md).
 
-Serverless is reshaping the way developers think about software/system architectures. By simplifying infrastructure, technologies such as Functions, Logic Apps, and Event Hubs have made is easier to develop reusable APIs (consumed by mobile, desktop, web, and IoT clients).
 
-The burden of managing infrastructure no longer lies with the developer, leaving them to focus on solving the problem (i.e. writing code) instead of worrying about managing the environment. Infrastructure professionals also benefit from PaaS; thanks to auto-scale and micro-billing, there are financial savings to be realized without sacrificing scalability per demand.
-
-In this workshop, you will develop an end-to-end data streaming/processing solution using a variety of technologies. We will walk through how to deploy an event generation/streaming application into [Azure Container Instances](https://azure.microsoft.com/en-us/services/container-instances/); this app will be the data source of our pipeline. Events will be streamed to [Event Hubs](https://azure.microsoft.com/en-us/services/event-hubs/), after which [Logic Apps](https://azure.microsoft.com/en-us/services/logic-apps/) will respond to each event entering the pipeline, using [Functions](https://azure.microsoft.com/en-us/services/functions/) for data enrichment prior to storing the events in [Cosmos DB](https://azure.microsoft.com/en-us/services/cosmos-db/) for future consumption. [API Management](https://azure.microsoft.com/en-us/services/api-management/) will provide an abstraction layer over our newly created APIs, to support reuse of code by others.
-
-![Architecture](Architecture.png)
-
-### Target Audience
-* Technical roles (engineers, architects, infrastructure managers, etc.).
-* Anyone interested in automating business processes.
-* Anyone interested in learning about Azure and Serverless.
-
-### Requirements
-* An active [Azure Subscription](https://azure.microsoft.com/en-us/free/).
-* An internet enabled computer.
-
-## Getting Started
-1. [Deploying the streaming app into Azure](ACI.md).
-1. [Ingesting events into Event Hubs](EventHubs.md).
-1. [Capturing events in Cosmos DB](LogicApps.md).
-1. [Enriching the event's payload](Functions.md).
-1. [Sharing our APIs with others](APIM.md).
-1. [Review and next steps](Review.md).
-
-**Note**: it may be worth preloading your API Management service as this service typically take a little while to set up; for more info on how to create your API Management service, see [Creating the API Management Service](APIM.md#creating-the-api-management-service).
 
 ---
 
-![Workshop](Workshop.gif)
+
+Due to the nature of working via CLI, you will need to be comfortable working across multiple different sessions and managing the state across those sessions. It is recommended to have 2 active sessions to complete the workshop: one on your **local machine** (local host), and another on the **Azure VM** (remote host, which will be created as part of the lab).
+
+Decorations will be added preceding any commands to provide context for the execution environment. Commands preceded by `__LocalHost__` are to be run locally, while those preceded by `__RemoteHost__` are to be executed in the Azure VM. Commands without any decorations can be executed from a host of your choosing. Below are some examples to help familiarize yourself with this convention:
+```sh
+# __LocalHost__
+echo "You should enter this command in your local machine's environment."
+```
+```sh
+# __RemoteHost__
+echo "However, you should switch to the session in your Azure VM and execute this command there!"
+
+echo "This command is also meant to be executed remotely."
+```
+```sh
+echo "Feel free to execute this locally or in your Azure VM."
+echo "It may make sense to run the commands in whatever context you're currently in..."
+echo "...I mean... it's easier!"
+
+echo "¯\_(ツ)_/¯. "
+```
+
+
+
+1. x
+    ```sh
+    # __LocalHost__
+    az login
+    ```
+
+    ```json
+    Note, we have launched a browser for you to login. For old experience with device code, use "az login --use-device-code"
+    You have logged in. Now let us find all the subscriptions to which you have access...
+    [
+    	{
+    		"cloudName": "AzureCloud",
+    		"id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    		"isDefault": true,
+    		"name": "AIRS",
+    		"state": "Enabled",
+    		"tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    		"user": {
+    			"name": "manniet@microsoft.com",
+    			"type": "user"
+    		}
+    	}
+    ]  
+    ```
+
+1. x
+    ```sh
+    # __LocalHost__
+    az account set --subscription __subscription_name__ # example: az account set --subscription "AIRS"
+    ```
+
+1. x
+    ```sh
+    # __LocalHost__
+    group=__resource_group_name__ # example: group=StreamerCLI
+    location=__location_for_your_azure_resources__ # example: location=eastus2
+    ```
+
+    https://azure.microsoft.com/en-us/global-infrastructure/services/?products=all
+
+1. x.
+    ```sh
+    # __LocalHost__
+    az group create --name $group --location $location
+    ```
+
+    ```json
+    {
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI",
+      "location": "eastus2",
+      "managedBy": null,
+      "name": "StreamerCLI",
+      "properties": {
+        "provisioningState": "Succeeded"
+      },
+      "tags": null,
+      "type": null
+    }
+    ```
+
+
+
+---
+
+
+
+Move on to [Deploying the streaming app into Azure](ACI.md).

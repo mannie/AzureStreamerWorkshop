@@ -7,7 +7,7 @@ Return to [Overview](ReadMe.md).
 
 
 
-In this sections, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+In this section, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
 
 **Section Outline**
 1. [Creating the Staging VM](#creating-the-staging-vm)
@@ -22,28 +22,35 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 
 ## Creating the Staging VM
-*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
-1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app. Click on `Create a resource`. In the search box that appears, search for `centos` and select `CentOS 7.6`.
-  ![Create a resource](ACI/VM/1.png)
+1. x
+    ```sh
+    # __LocalHost__
+    vm=__virtual_machine_name__ # example: vm=staging
+    az vm create \
+        --name $vm \
+        --resource-group $group \
+        --location $location \
+        --image $(az vm image list --all -p Canonical -f Ubuntu --query "[?sku=='18.10']".urn -o tsv | sort -u | head -n 1) \
+        --authentication-type ssh \
+        --generate-ssh-keys \
+        --size Standard_D2s_v3
+    ```
 
-1. You should be presented with a panel describing the service you're going to create; click `Create`.
-  ![Create](ACI/VM/2.png)
-
-1. Complete the form with information about the VM you want to create, ensuring that you create a new resource group for your VM. Give your VM a name and select a region close to your current location (or another preferred location). Set the authentication type to `password` and provide a valid username-password pair. You will also want to make sure that SSH is selected as a public inbound port. Once you have filled the form in, click `Review + create`.
-  ![Review + create](ACI/VM/3.png)
-
-1. You will be asked to review the configuration of your VM; click `Create`.
-  ![Create](ACI/VM/4.png)
-
-1. Once the VM has completed deploying, click `Go to resource`.
-  ![Go to resource](ACI/VM/5.png)
-
-1. In order to log into the VM, will need to obtain its IP address. While on the overview section of the VM, click on `Connect`.
-  ![Connect](ACI/VM/6.png)
-
-1. Select `SSH` from the panel that appears, and copy the login information (for later use) which should look something like `ssh mannie@123.45.67.89`.
-  ![Copy SSH login](ACI/VM/7.png)
+    ```json
+    SSH key files '/Users/mannie/.ssh/id_rsa' and '/Users/mannie/.ssh/id_rsa.pub' have been generated under ~/.ssh to allow SSH access to the VM. If using machines without permanent storage, back up your keys to a safe location.
+    {
+      "fqdns": "",
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Compute/virtualMachines/staging",
+      "location": "eastus2",
+      "macAddress": "00-0D-3A-0D-E8-91",
+      "powerState": "VM running",
+      "privateIpAddress": "10.0.0.4",
+      "publicIpAddress": "52.225.130.62",
+      "resourceGroup": "StreamerCLI",
+      "zones": ""
+    }
+    ```
 
 
 
@@ -52,72 +59,34 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 
 ## Configuring the VM
-*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
 1. SSH into your new VM via CLI using the login info provided at creation time:
     ```sh
-    ssh $user@$hostip # example mannie@123.45.67.89
+    # __LocalHost__
+    ipStagingVM=$(az vm list-ip-addresses --resource-group $group --query "[?virtualMachine.name=='$vm'].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+    ssh $ipStagingVM
     ```
-    You will receive a message (similar to this) asking you to confirm that you want to connect to the VM.
+    You may receive a message (similar to this) asking you to confirm that you want to connect to the VM.
     ```
-    The authenticity of host '40.84.44.109 (40.84.44.109)' can't be established.
-    ECDSA key fingerprint is SHA256:4fYn6C2yelIAsds34GSDGTRgMrhT27Zcdfgytew45F3g.
+    The authenticity of host '52.225.130.62 (52.225.130.62)' can't be established.
+    ECDSA key fingerprint is SHA256:U9KPN2lzxEcEO9qaW26vpf63JTVN5v2BHLdMlwR1IUM.
     Are you sure you want to continue connecting (yes/no)?
     ```
     To confirm that you want to continue accessing the VM, type `yes` and hit `Enter`.
 
-1. Once you've successfully logged in, the following commands to install Docker and its dependencies, as per the [Docker documentation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/centos/#install-using-the-repository)). You will be prompted for your password and for confirmation; enter it and hit `Enter`.
+1. x
     ```sh
-    sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -y docker-ce
+    # __RemoteHost__
+    config=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/ACI/InstallDevTools.sh
+    curl --silent --show-error $config | sudo bash
     ```
 
-1. Start the Docker engine.
+1. x
     ```sh
-    sudo systemctl start docker
+    # __RemoteHost__
+    az login
+    az account set --subscription __subscription_name__ # example: az account set --subscription AIRS
     ```
-
-1. Verify that Docker installed correctly by running the `hello-world` image.
-    ```sh
-    sudo docker run hello-world
-    ```
-    You should see some output similar to the following (this confirms that Docker is correctly installed):
-    ```
-    Hello from Docker!
-    This message shows that your installation appears to be working correctly.
-
-    To generate this message, Docker took the following steps:
-     1. The Docker client contacted the Docker daemon.
-     2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
-        (amd64)
-     3. The Docker daemon created a new container from that image which runs the
-        executable that produces the output you are currently reading.
-     4. The Docker daemon streamed that output to the Docker client, which sent it
-        to your terminal.
-
-    To try something more ambitious, you can run an Ubuntu container with:
-     $ docker run -it ubuntu bash
-
-    Share images, automate workflows, and more with a free Docker ID:
-     https://hub.docker.com/
-
-    For more examples and ideas, visit:
-     https://docs.docker.com/get-started/
-     ```
-
-1. Install the Git SCM tool so that we can obtain a local copy of the streamer app later.
-    ```sh
-    sudo yum install -y git
-    ```
-    Use the following command to confirm the installation...
-    ```sh
-    which git
-    ```
-    ...which should yield the following result:
-    ```
-    /usr/bin/git
-    ```  
 
 
 
@@ -129,45 +98,57 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 1. Git `clone` the [Event Streamer](https://github.com/mannie/EventStreamer) app.
     ```sh
+    # __RemoteHost__
     git clone https://github.com/mannie/EventStreamer.git
     ```
     You should see the output similar to the following...
     ```
     Cloning into 'EventStreamer'...
-    remote: Enumerating objects: 158, done.
-    remote: Counting objects: 100% (158/158), done.
-    remote: Compressing objects: 100% (98/98), done.
-    remote: Total 228 (delta 65), reused 130 (delta 46), pack-reused 70
-    Receiving objects: 100% (228/228), 151.47 KiB | 0 bytes/s, done.
-    Resolving deltas: 100% (92/92), done.
+    remote: Enumerating objects: 181, done.
+    remote: Counting objects: 100% (181/181), done.
+    remote: Compressing objects: 100% (113/113), done.
+    remote: Total 251 (delta 77), reused 148 (delta 53), pack-reused 70
+    Receiving objects: 100% (251/251), 14.01 MiB | 0 bytes/s, done.
+    Resolving deltas: 100% (104/104), done.
     ```
     ...and find that a new directory is available: `EventStreamer`. Change directory into the project's root, and list the contents.
-    ```
-    cd EventStreamer
-    ls -F
+    ```sh
+    # __RemoteHost__
+    cd EventStreamer && ls -F
     ```
     You don't need to know what to do with this folder structure yet: just note that the `Dockerfile` file exists as we will update this later.
     ```
-    Dockerfile  EventStreamer.xcodeproj/  Package.swift  README.md  Sources/  Tests/
+    Container.gif  Dockerfile  Package.swift  PrepareXCodeProj.sh*  README.md  Sources/  Tests/  Xcode.gif
     ```
 
-1. Build the app and run it locally.
+1. Build the app and run it.
     ```sh
-    sudo docker build --tag streamer .
-    sudo docker run --interactive --tty --rm streamer
+    # __RemoteHost__
+    app=__app_name_or_tag__ # example: app=streamer
+    sudo docker build --tag $app .
+    sudo docker run --interactive --tty --rm $app
     ```
     Once the app finishes building and starts running, the following output should be somewhat familiar:
     ```
-    Linking ./.build/x86_64-unknown-linux/debug/EventStreamer
-    2019-02-28 22:12:56		with...	50 		["name": "withdrawal", "current": 50, "initial": 50]
-    2019-02-28 22:12:56		depo...	1000 		["name": "deposit", "current": 1000, "initial": 1000]
-    2019-02-28 22:12:57		purc...	10 		["name": "purchase", "current": 10, "initial": 10]
-    2019-02-28 22:12:58		purc...	10 		["name": "purchase", "current": 10, "initial": 10, "previous": 10]
-    2019-02-28 22:12:59		purc...	12 		["name": "purchase", "current": 12, "initial": 10, "previous": 10]
-    2019-02-28 22:13:00		with...	56 		["name": "withdrawal", "current": 56, "initial": 50, "previous": 50]
-    2019-02-28 22:13:02		purc...	12 		["name": "purchase", "current": 12, "initial": 10, "previous": 12]
-    2019-02-28 22:13:03		depo...	1000 		["name": "deposit", "current": 1000, "initial": 1000, "previous": 1000]
-    2019-02-28 22:13:05		purc...	14 		["name": "purchase", "current": 14, "initial": 10, "previous": 12]
+    ...
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 deposit
+
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 withdrawal
+
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 purchase
+
+    2019-05-03 19:28:43		depo...	1000 		["initial": 1000, "current": 1000, "name": "deposit"]
+    2019-05-03 19:28:43		with...	50 		["initial": 50, "current": 50, "name": "withdrawal"]
+    2019-05-03 19:28:44		purc...	10 		["name": "purchase", "current": 10, "initial": 10]
+    2019-05-03 19:28:47		purc...	10 		["previous": 10, "initial": 10, "name": "purchase", "current": 10]
+    2019-05-03 19:28:47		with...	52 		["previous": 50, "current": 52, "name": "withdrawal", "initial": 50]
+    2019-05-03 19:28:48		purc...	12 		["previous": 10, "initial": 10, "name": "purchase", "current": 12]
     ...
     ```
     To stop the streamer, hit  `Ctrl + C`.
@@ -180,71 +161,183 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 ## Deploying the Streamer App
 
-1. Using the [Azure Portal](https://portal.azure.com), create a new Container Registry into which we will host our app.
-  ![Create a resource](ACI/Registry/1.png)
-
-1. Click `Create`, located at the bottom of the service summary page.
-  ![Create](ACI/Registry/2.png)
-
-1. Provide a unique name for you registry. Select the project resource group and select the preferred location. Be sure to set the admin user to `Enabled`.
-  ![Create](ACI/Registry/3.png)
-
-1. Once the service has successfully deployed, navigate to the `Access keys` section of the service. You will want to take note of the following properties for future use: `Registry name`, `Login server`, `Username`, and either `password` or `password2`.
-  ![Access keys](ACI/Registry/4.png)
-
-1. In our CLI, we want to run the following commands in order to push the container image into our registry. Be sure to replace `registry=address.to.registry` with the appropriate value (e.g. `registry=streamer.azurecr.io`).
+1. x
     ```sh
-    registry=address.to.registry # example streamer.azurecr.io
+    # __LocalHost__
+    acr=__globally_unique_name__ # example: acr=streamercli
+    az acr create \
+        --name $acr \
+        --resource-group $group \
+        --sku Basic \
+        --admin-enabled true \
+        --location $location
+    ```
+    ```json
+    {
+      "adminUserEnabled": true,
+      "creationDate": "2019-05-02T20:51:26.728439+00:00",
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.ContainerRegistry/registries/streamercli",
+      "location": "eastus2",
+      "loginServer": "streamercli.azurecr.io",
+      "name": "streamercli",
+      "networkRuleSet": null,
+      "provisioningState": "Succeeded",
+      "resourceGroup": "StreamerCLI",
+      "sku": {
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "status": null,
+      "storageAccount": null,
+      "tags": {},
+      "type": "Microsoft.ContainerRegistry/registries"
+    }
+    ```
 
-    sudo docker login $registry # enter the Username and Password values from the previous step when/if prompted.
-    sudo docker tag streamer $registry/streamer
-    sudo docker push $registry/streamer
+1. x
+    ```sh
+    # __RemoteHost__
+    acr=__name_of_your_newly_created_registry__ # example: acr=streamercli
+    registry=$(az acr list --query "[?name=='$acr'].loginServer" --output tsv)
     ```
-    The `docker login` command might yield similar results to...
+
+1. x
+    ```sh
+    # __RemoteHost__
+    sudo docker login $registry
     ```
-    [sudo] password for mannie:
-    Username: streamer
+
+    ```sh
+    # __LocalHost__
+    az acr credential show -n $acr -g $group --query username -o tsv
+    az acr credential show -n $acr -g $group --query passwords[0].value -o tsv
+    ```
+
+    ```
+    Username: streamercli
     Password:
-    WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+    WARNING! Your password will be stored unencrypted in /home/mannie/.docker/config.json.
     Configure a credential helper to remove this warning. See
     https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 
     Login Succeeded
     ```
-    ...while the `docker push` command something like:
-    ```
-    The push refers to repository [streamer.azurecr.io/streamer]
-    91c5a5eb2384: Pushed
-    5a568a65644d: Pushed
-    bad91c8e04cc: Pushing [=============>                                     ]  197.1MB/718.1MB
-    b637f65d47e5: Pushing [=========>                                         ]  116.9MB/640.8MB
-    68dda0c9a8cd: Pushed
-    f67191ae09b8: Pushed
-    b2fd8b4c3da7: Pushed
-    0de2edf7bff4: Pushing [=============================>                     ]   68.8MB/117.2MB
+
+1. x
+    ```sh
+    # __RemoteHost__
+    repository=$registry/$app
+    sudo docker tag $app $repository
+    sudo docker push $repository
     ```
 
-1. In the [Azure Portal](https://portal.azure.com), we're able to examine the container we have just pushed.
-  ![Tagged container](ACI/Registry/5.png)
+    ```
+    The push refers to repository [streamercli.azurecr.io/streamer]
+    d9912d906116: Pushed
+    dd50c323d66d: Pushed
+    c4b8fb3eedcf: Pushing [==>                                                ]  56.23MB/940MB
+    0f5c40fcc0e7: Pushing [=======>                                           ]  50.96MB/342.3MB
+    7660ded5319c: Pushed
+    94e5c4ea5da6: Pushed
+    5d74a98c48bc: Pushed
+    604cbde1a4c8: Pushing [=======>                                           ]  15.24MB/101.7MB
+    ```
 
-1. Our next step involves the creation of a service that will allow our container to execute in the cloud: Container Instances. Click on `Create a resource` and find `Container Instances`.
-  ![Create a resource](ACI/Instance/1.png)
+1. x
+    ```sh
+    # __LocalHost__
+    repository=$(az acr repository list --name $acr --query [0] --output tsv)
+    az acr repository show-manifests --name $acr --repository $repository --detail
+    ```
 
-1. Click on the `Create` button at the bottom of the service summary.
-  ![Create](ACI/Instance/2.png)
+    ```json
+    [
+      {
+        "architecture": "amd64",
+        "changeableAttributes": {
+          "deleteEnabled": true,
+          "listEnabled": true,
+          "readEnabled": true,
+          "writeEnabled": true
+        },
+        "createdTime": "2019-05-02T21:22:56.5796654Z",
+        "digest": "sha256:667858043fa532d71cf23eb4935bab2995f0d04ebc871f8128046495717e2671",
+        "imageSize": 500401046,
+        "lastUpdateTime": "2019-05-02T21:22:56.5796654Z",
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "os": "linux",
+        "tags": [
+          "latest"
+        ]
+      }
+    ]
+    ```
 
-1. Give your resource a name and add it to our project resource group. Ensure that the container image type is set to `Private` and that you provide the details to your registry. Click `OK` on form completion.
-  ![Basics](ACI/Instance/3.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az container create \
+        --name $repository \
+        --resource-group $group \
+        --location $location \
+        --image $(az acr show -n $acr -g $group --query loginServer -o tsv)/$repository \
+        --registry-username $(az acr credential show -n $acr -g $group --query username -o tsv) \
+        --registry-password $(az acr credential show -n $acr -g $group --query passwords[0].value -o tsv) \
+        --os-type Linux \
+        --cpu 1 \
+        --memory 0.5 \
+        --ip-address Private
+    ```
 
-1. Ensure that the OS Type is set to `Linux` and that public IP address is set to `No`. Click `OK` on form completion.
-  ![Configuration](ACI/Instance/4.png)
+    ```json
+    {
+      "containers": [ ... ],
+      "diagnostics": null,
+      "dnsConfig": null,
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.ContainerInstance/containerGroups/streamer",
+      "identity": null,
+      "imageRegistryCredentials": [ ... ],
+      "instanceView": {
+        "events": [],
+        "state": "Running"
+      },
+      "ipAddress": null,
+      "location": "eastus2",
+      "name": "streamer",
+      "networkProfile": null,
+      "osType": "Linux",
+      "provisioningState": "Succeeded",
+      "resourceGroup": "StreamerCLI",
+      "restartPolicy": "Always",
+      "tags": {},
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "volumes": null
+    }
+    ```
 
-1. If everything checks out, you should be able to hit `OK` and watch your service get deployed.
-  ![Summary](ACI/Instance/5.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az container logs --name $repository --resource-group $group --follow
+    ```
 
-1. Once the ACI has deployed successfully, it will automatically start executing. Head on over the to the `Containers` section of our newly deployed ACI and click on `Logs`. This output should look familiar, and should serve and confirmation of our streamer app running successfully in Azure.
-  ![Logs](ACI/Instance/6.png)
-
+    ```
+    Fetching https://github.com/mannie/AzureCocoaSAS.git
+    Fetching https://github.com/krzyzanowskim/CryptoSwift.git
+    Completed resolution in 4.04s
+    Cloning https://github.com/mannie/AzureCocoaSAS.git
+    Resolving https://github.com/mannie/AzureCocoaSAS.git at master
+    Cloning https://github.com/krzyzanowskim/CryptoSwift.git
+    Resolving https://github.com/krzyzanowskim/CryptoSwift.git at 1.0.0
+    [1/4] Compiling Swift Module 'CryptoSwift' (75 sources)
+    [2/4] Compiling Swift Module 'AzureCocoaSAS' (1 sources)
+    [3/4] Compiling Swift Module 'EventStreamer' (4 sources)
+    [4/4] Linking ./.build/x86_64-unknown-linux/debug/EventStreamer
+    STREAM INFO
+      endpoint	 n/a
+      name		 deposit
+    ...
+    ```
 
 
 ---

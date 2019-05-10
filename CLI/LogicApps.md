@@ -50,20 +50,111 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Creating the Cosmos DB Store
 
-1. Click on `Create a resource` and find `Azure Cosmos DB`.
-  ![Create a resource](LogicApps/Cosmos/1.png)
+1. x
+    ```sh
+    # __LocalHost__
+    cosmos=__globally_unique_name__ # example cosmosdb=streamercli
+    az cosmosdb create \
+        --name $cosmos \
+        --resource-group $group \
+        --locations $location=0 \
+        --enable-multiple-write-locations true \
+        --kind GlobalDocumentDB
+    ```
+    ```json
+    {
+      "capabilities": [],
+      "consistencyPolicy": {
+        "defaultConsistencyLevel": "Session",
+        "maxIntervalInSeconds": 5,
+        "maxStalenessPrefix": 100
+      },
+      "databaseAccountOfferType": "Standard",
+      "documentEndpoint": "https://streamercli.documents.azure.com:443/",
+      "enableAutomaticFailover": false,
+      "enableMultipleWriteLocations": true,
+      "failoverPolicies": [ ... ],
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.DocumentDB/databaseAccounts/streamercli",
+      "ipRangeFilter": "",
+      "isVirtualNetworkFilterEnabled": false,
+      "kind": "GlobalDocumentDB",
+      "location": "East US 2",
+      "name": "streamercli",
+      "provisioningState": "Succeeded",
+      "readLocations": [ ... ],
+      "resourceGroup": "StreamerCLI",
+      "tags": {},
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "virtualNetworkRules": [],
+      "writeLocations": [ ... ]
+    }
+    ```
 
-1. Click `Create` at the bottom of the service summary.
-  ![Create](LogicApps/Cosmos/2.png)
+1. x
+    ```sh
+    # __LocalHost__
+    db=events
+    az cosmosdb database create \
+        --db-name $db \
+        --name $cosmos \
+        --resource-group $group
+    ```
 
-1. Fill in the service creation form, selecting the workshop's resource group and a location of your choosing. Give the service a globally unique name, and select `Core (SQL)` as the API. Click on `Review + create`.
-  ![Review + create](LogicApps/Cosmos/3.png)
+    ```json
+    {
+      "_colls": "colls/",
+      "_etag": "\"00002100-0000-0200-0000-5cd0451b0000\"",
+      "_rid": "f8k-AA==",
+      "_self": "dbs/f8k-AA==/",
+      "_ts": 1557153051,
+      "_users": "users/",
+      "id": "events"
+    }
+    ```
 
-1. Upon successful validation, click `Create`, otherwise resolve the validation errors.
-  ![Validation](LogicApps/Cosmos/4.png)
+1. x
+    ```sh
+    collection=captured
+    az cosmosdb collection create \
+        --collection-name $collection \
+        --db-name $db \
+        --name $cosmos \
+        --partition-key-path /event/name \
+        --resource-group $group \
+        --throughput 400
+    ```
 
-1. Once your Cosmos DB has finished deploying, head on over to the `Data Explorer` section. Click on `New Collection` from the blade on the right. A panel will appear on the far right. Give the database and the collection to be created a name, and set the collection's partition key to `/event/name`. Click `OK` once done.
-  ![New collection](LogicApps/Cosmos/5.png)
+    ```json
+    {
+      "collection": {
+        "_conflicts": "conflicts/",
+        "_docs": "docs/",
+        "_etag": "\"00002300-0000-0200-0000-5cd046ba0000\"",
+        "_rid": "f8k-AKWdebQ=",
+        "_self": "dbs/f8k-AA==/colls/f8k-AKWdebQ=/",
+        "_sprocs": "sprocs/",
+        "_triggers": "triggers/",
+        "_ts": 1557153466,
+        "_udfs": "udfs/",
+        "conflictResolutionPolicy": { ... },
+        "geospatialConfig": {
+          "type": "Geography"
+        },
+        "id": "captured",
+        "indexingPolicy": { ... },
+        "partitionKey": {
+          "kind": "Hash",
+          "paths": [
+            "/event/name"
+          ],
+          "systemKey": false
+        }
+      },
+      "offer": { ... }
+    }
+    ```
+
+1. x
 
 
 
@@ -73,32 +164,96 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Creating the Logic App
 
-1. Click `Create a resource` and find `Logic App`.
-  ![Create a resource](LogicApps/Logic/1.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az group deployment create \
+        --resource-group $group \
+        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.0.arm.json
+    ```
+    ```json
+    {
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.0.arm",
+      "location": null,
+      "name": "CaptureEvents.0.arm",
+      "properties": {
+        "correlationId": "81c04a57-ec47-4227-ab5d-5aef1b8f548b",
+        "debugSetting": null,
+        "dependencies": [],
+        "duration": "PT6.7523756S",
+        "mode": "Incremental",
+        "onErrorDeployment": null,
+        "outputResources": [ ... ],
+        "outputs": null,
+        "parameters": {
+          "workflows_parent_name": {
+            "type": "String",
+            "value": "CaptureEvents"
+          }
+        },
+        "parametersLink": null,
+        "providers": [ ... ],
+        "provisioningState": "Succeeded",
+        "template": null,
+        "templateHash": "1440037073524055121",
+        "templateLink": null,
+        "timestamp": "2019-05-10T22:25:35.446673+00:00"
+      },
+      "resourceGroup": "StreamerCLI",
+      "type": null
+    }
+    ```
 
-1. Click `Create` which appears at the bottom of the service summary.
-  ![Create](LogicApps/Logic/2.png)
-
-1. Give the Logic App a name, add it to the workshop's resource group, and select your preferred location. Click `Create` once done. Once the Logic App has deployed successfully, go to the resource.
-  ![Form](LogicApps/Logic/3.png)
-
-1. *If opening your Logic App didn't show you an introduction to Logic Apps, click on the `Edit` button from the `Overview` section of the Logic App.*
-  ![Edit](LogicApps/Logic/4.png)
-
-1. Select the `Blank Logic App` template.
-  ![Blank Logic App](LogicApps/Logic/5.png)
-
-1. Filter the triggers to only show those from `Event Hubs`. Select the `When events are available in Event Hub` trigger; this will allow the Logic App to execute each time an event is streamed through our Event Hub.
-  ![Select trigger](LogicApps/Logic/6.png)
-
-1. Give the connection a name of your choosing, and select the namespace associated to the Event Hub we created earlier.
-  ![Event Hub connection](LogicApps/Logic/7.png)
-
-1. Select the available access policy from the list presented to you, and click `Create`
-  ![Event Hub policy](LogicApps/Logic/8.png)
-
-1. Select the Event Hub we created earlier, and set the trigger to deserialize the data as `application/json`. Specify an interval at which to poll the Event Hub for new events, and hit `Save`.
-  ![Config and save](LogicApps/Logic/9.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az group deployment create \
+        --resource-group $group \
+        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.1.arm.json \
+        --parameters "{ \
+                'eventhubs_hub_name' : { 'value' : '$eventhub' } \
+            }"
+    ```
+    ```json
+    {
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.1.arm",
+      "location": null,
+      "name": "CaptureEvents.1.arm",
+      "properties": {
+        "correlationId": "0ca5969a-0012-4fd8-bbf7-5bfaacbab4a0",
+        "debugSetting": null,
+        "dependencies": [],
+        "duration": "PT4.0172356S",
+        "mode": "Incremental",
+        "onErrorDeployment": null,
+        "outputResources": [ ... ],
+        "outputs": null,
+        "parameters": {
+          "connections_eventhubs_externalid": {
+            "type": "String",
+            "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs"
+          },
+          "eventhubs_hub_name": {
+            "type": "String",
+            "value": "cli"
+          },
+          "workflows_parent_name": {
+            "type": "String",
+            "value": "CaptureEvents"
+          }
+        },
+        "parametersLink": null,
+        "providers": [ ... ],
+        "provisioningState": "Succeeded",
+        "template": null,
+        "templateHash": "9351925465353901771",
+        "templateLink": null,
+        "timestamp": "2019-05-10T22:29:06.345254+00:00"
+      },
+      "resourceGroup": "StreamerCLI",
+      "type": null
+    }
+    ```
 
 1. The `Overview` section of the Logic App should indicate that the Logic App has received and processed events (see the `Runs history` panel). If the `Runs history` isn't showing any activity, click the `Refresh` button located above the `Runs history` section.
   ![Runs history](LogicApps/Logic/10.png)
@@ -123,70 +278,46 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Enriching the Event Payload
 
-1. Let's return to the Logic App editor by clicking `Edit` from the `Overview` section of the service.
-  ![Edit](LogicApps/Enrich/1.png)
-
-1. Click `+ New step` to add another action to our Logic App.
-  ![New step](LogicApps/Enrich/2.png)
-
-1. We are going to create a variable which will hold the value for our object's ID before persisting it into Cosmos DB. Find the `Variables` grouping and select `Initialize variable`.
-  ![Initialize variable](LogicApps/Enrich/3.png)
-
-1. Set the name of our variable to `ID`, type to `String`, and the value to `SequenceNumber-Offset`. The sequence number and offset can be obtained via the popup that appears after clicking on the value text field; if it doesn't automatically appear, click `Add dynamic content`. Click `+ New step` after.
-  ![Set ID](LogicApps/Enrich/4.png)
-
-1. Find the `Compose` action; we will use this to craft the JSON document that we want to persist.
-  ![Find Composer](LogicApps/Enrich/5.png)
-
-1. Update the input of the composer with JSON similar to...
+1. x
+    ```sh
+    # __LocalHost__
+    az group deployment create \
+        --resource-group $group \
+        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.2.arm.json \
+        --parameters "{ \
+                'eventhubs_hub_name' : { 'value' : '$eventhub' }, \
+                'cosmosdb_database_name' : { 'value' : '$db' }, \
+                'cosmosdb_collection_name' : { 'value' : '$collection' } \
+            }"
+    ```
     ```json
     {
-        "event" : $content,
-        "id" : $id,
-        "properties" : $properties
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.2.arm",
+      "location": null,
+      "name": "CaptureEvents.2.arm",
+      "properties": {
+        "correlationId": "fc58b1e2-9cb9-4b7c-8c3a-a9439cdc0d52",
+        "debugSetting": null,
+        "dependencies": [],
+        "duration": "PT4.6728183S",
+        "mode": "Incremental",
+        "onErrorDeployment": null,
+        "outputResources": [ ... ],
+        "outputs": null,
+        "parameters": { ... },
+        "parametersLink": null,
+        "providers": [ ... ],
+        "provisioningState": "Succeeded",
+        "template": null,
+        "templateHash": "9644914800481869788",
+        "templateLink": null,
+        "timestamp": "2019-05-10T22:33:21.100645+00:00"
+      },
+      "resourceGroup": "StreamerCLI",
+      "type": null
     }
     ```
-    ...where `$content`, `$id`, and `$properties` are replaced by the `Content` from the Event Hub trigger, the `ID` variable, and the `Properties` from the Event Hub trigger, respectively.
-  ![Compose](LogicApps/Enrich/6.png)
 
-1. Next, we're going to extract individual values from the `Content` from the Logic App's Event Hub trigger. This doesn't need to be performed sequential and can therefor be parallelized. Click on the `+` preceding our composed, then `Add a parallel branch`.
-  ![Add a parallel branch](LogicApps/Enrich/7.png)
-
-1. Find and select the `Parse JSON` action.
-  ![Parse JSON](LogicApps/Enrich/8.png)
-
-1. Set the Event Hub's `Content` as the value of the `Parse JSON` action's content. Will we use a sample/template of the payload to generate the JSON schema required by this action to extract the individual components; click on `Use sample payload to generate schema`.
-  ![Set content](LogicApps/Enrich/9.png)
-
-1. Paste in the following template (or similar) and click `Done`.
-    ```json
-    {
-        "name": "deposit",
-        "current": 999,
-        "timestamp": 1551465599,
-        "previous": 1000,
-        "initial": 1000
-    }
-    ```
-    ![Use sample payload to generate schema](LogicApps/Enrich/10.png)
-
-1. Now we can persist our document into Cosmos DB. Click `+ New step`.
-  ![New step](LogicApps/Enrich/11.png)
-
-1. Find the Cosmos DB group, and select the `Create or update document` action.
-  ![Create or update document](LogicApps/Enrich/12.png)
-
-1. Provide a name for the connection to Cosmos DB, select the Cosmos DB instance, and hit `Create`.
-  ![Connect to Cosmos DB](LogicApps/Enrich/13.png)
-
-1. Select the database and collection where the document will be stored. Set the output of our `Compose` action from earlier as the document to persist.
-  ![Select collection](LogicApps/Enrich/14.png)
-
-1. Before we can successfully store our document, we need to let Cosmos DB know the value to use for partitioning. Click on `Add new parameter` and check the `Partition key value` item.
-  ![Partition key value](LogicApps/Enrich/15.png)
-
-1. Set the `Partition key value` to the `name` extracted via our `Parse JSON` action earlier. Be sure to enclose this value in double quotes: `"$name"`. Once done, feel free to `Save` your Logic App so that the changes we've made can take effect.
-  ![Set partition key value](LogicApps/Enrich/16.png)
 
 1. Feel free to inspect the recent execution via the `Runs history` section of the `Overview` blade. Remember, if the `Runs history` isn't showing any activity, click the `Refresh` button located above the `Runs history` section.
   ![Runs history](LogicApps/Enrich/17.png)

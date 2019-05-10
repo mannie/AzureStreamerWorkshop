@@ -21,23 +21,71 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 ## Creating an Event Hub
 
-1. Click on `Create a resource` and search for `Event Hubs`.
-  ![Create a resource](EventHubs/1.png)
+1. x
+    ```sh
+    # __LocalHost__
+    namespace=__globally_unique_name__ # example: namespace=streamercli
+    az eventhubs namespace create \
+        --name $namespace \
+        --resource-group $group \
+        --location $location \
+        --sku Basic
+    ```
+    ```json
+    {
+      "createdAt": "2019-05-03T20:45:49.190000+00:00",
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.EventHub/namespaces/streamercli",
+      "isAutoInflateEnabled": false,
+      "kafkaEnabled": false,
+      "location": "East US 2",
+      "maximumThroughputUnits": 0,
+      "metricId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:streamercli",
+      "name": "streamercli",
+      "provisioningState": "Succeeded",
+      "resourceGroup": "StreamerCLI",
+      "serviceBusEndpoint": "https://streamercli.servicebus.windows.net:443/",
+      "sku": {
+        "capacity": 1,
+        "name": "Basic",
+        "tier": "Basic"
+      },
+      "tags": {},
+      "type": "Microsoft.EventHub/Namespaces",
+      "updatedAt": "2019-05-03T20:46:16.210000+00:00"
+    }
+    ```
 
-1. On the service overview page, click `Create` located at the bottom.
-  ![Create](EventHubs/2.png)
-
-1. Fill in the creation form by providing a globally unique namespace for your Event Hub. Select the resource group for the workshop and your preferred location, and click `Create`.
-  ![Form create](EventHubs/3.png)
-
-1. Upon successful deployment of the service, find your way to the `Overview` section. Click on `+ Event Hub`; we're now going to create the endpoint where our streamer app will stream events to.
-  ![Add Event Hub](EventHubs/4.png)
-
-1. Give your hub a name and click `Create`.
-  ![Create](EventHubs/5.png)
-
-1. You should see you newly created hub in the bottom section of the namespace `Overview`.
-  ![List of hubs](EventHubs/6.png)
+1. x
+    ```sh
+    # __LocalHost__
+    eventhub=__name__ # example: eventhub=cli
+    az eventhubs eventhub create \
+        --resource-group $group \
+        --namespace-name $namespace \
+        --name $eventhub \
+        --message-retention 1
+    ```
+    ```json
+    {
+      "captureDescription": null,
+      "createdAt": "2019-05-03T20:48:01.317000+00:00",
+      "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.EventHub/namespaces/streamercli/eventhubs/cli",
+      "location": "East US 2",
+      "messageRetentionInDays": 1,
+      "name": "cli",
+      "partitionCount": 4,
+      "partitionIds": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "resourceGroup": "StreamerCLI",
+      "status": "Active",
+      "type": "Microsoft.EventHub/Namespaces/EventHubs",
+      "updatedAt": "2019-05-03T20:48:01.673000+00:00"
+    }
+    ```
 
 
 
@@ -47,11 +95,9 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 ## Updating the Streamer App
 
-1. Navigate to the `Shared access policies` section of the Event Hubs Namespace resource. Clicking on the only existing policy (`RootManageSharedAccessKey`) will open a panel on the right; copy (or take note) of either the `Primary key` or the `Secondary key`.
-    ![](EventHubs/7.png)
-
 1. In our CLI, which should currently be in the `~/EventStreamer` folder, we're going to open the `Dockerfile` file for editing. If you're not in this folder for some reason, `cd` into it.
     ```sh
+    # __RemoteHost__
     nano Dockerfile
     ```
 
@@ -60,57 +106,68 @@ In this section, we will create and configure our Event Hub to ingest data from 
     FROM swift
     ENV SASPolicyName="RootManageSharedAccessKey"
     ENV SASPolicyKey="9gk50LPNstmrs1DKIVdASdkKgxZZSIp4olPRnXZmhDQ="
-    ENV EventHubNamespace="streamer"
+    ENV EventHubNamespace="streamercli"
     ENV EventHubPath="cli"
     WORKDIR /temp
     COPY . ./
     CMD swift package clean
     CMD swift run
     ```
+    ```sh
+    # __LocalHost__
+    authorizationRule=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
+    echo $authorizationRule
+    az eventhubs namespace authorization-rule keys list --name $authorizationRule --namespace-name $namespace --resource-group $group --query primaryKey --output tsv
+    ```
 
 1. Press `Ctrl + X` to exit out of the text editor. This will prompt you to save your changes; type `Y`. You will now be prompted to type in the file name to save to; leave this value unchanged (i.e. `Dockerfile`) and hit `Enter`. To confirm our changes were successfully saved, use the `cat` command.
     ```sh
+    # __RemoteHost__
     cat Dockerfile
     ```
 
 1. Rebuild the streamer app and run it.
     ```sh
-    sudo docker build --tag streamer .
-    sudo docker run --interactive --tty --rm streamer
+    # __RemoteHost__
+    sudo docker build --tag $app .
+    sudo docker run --interactive --tty --rm $app
     ```
     Once the app starts running, you should see something like this before your events start streaming:
     ```
     STREAM INFO
-      endpoint	https://streamer.servicebus.windows.net/cli
-      name		deposit
+    	endpoint	 https://streamercli.servicebus.windows.net/cli
+    	name		 deposit
     ```
-    If the value of the endpoint is `n/a`, ensure that the `ENV` variables in your `Dockerfile` are set correctly.
+    If the value of the endpoint is still `n/a`, ensure that the `ENV` variables in your `Dockerfile` are set correctly.
 
 1. Push your updated image up to the container registry. `$registry` should already contain the address to your registy; if not, feel free to update it accordingly.
     ```sh
-    registry=address.to.registry # example streamer.azurecr.io
-    sudo docker tag streamer $registry/streamer
-    sudo docker push $registry/streamer
-    ```
-    Your output should be similar to this:
-    ```
-    The push refers to repository [streamer.azurecr.io/streamer]
-    30511c2fe5b5: Pushed
-    b8f9595eaec3: Pushed
-    bad91c8e04cc: Layer already exists
-    b637f65d47e5: Layer already exists
-    68dda0c9a8cd: Layer already exists
-    f67191ae09b8: Layer already exists
-    b2fd8b4c3da7: Layer already exists
-    0de2edf7bff4: Layer already exists
-    latest: digest: sha256:b3c51a74aaecfdec905822e567bab707f1d6873e940af9cd85e8342fe386867a size: 1993
+    # __RemoteHost__
+    sudo docker tag $app $repository
+    sudo docker push $repository
     ```
 
-1. You Container Instance will automatically restart, and start executing the updated image. To confirm, head on over into the `Logs` section of your Container Instance. You should see your update stream info therein.
-  ![Log](EventHubs/8.png)
+    ```
+    The push refers to repository [streamercli.azurecr.io/streamer]
+    7c628f71b988: Pushed
+    afea60e837d3: Pushed
+    c4b8fb3eedcf: Layer already exists
+    0f5c40fcc0e7: Layer already exists
+    7660ded5319c: Layer already exists
+    94e5c4ea5da6: Layer already exists
+    5d74a98c48bc: Layer already exists
+    604cbde1a4c8: Layer already exists
+    latest: digest: sha256:c3e67ac963d2f2cd5b82bc3405de6aa799cd349c2c1db5e32285f828b41b815a size: 1994
+    ```
 
-1. Your Event Hub should also be receiving these events. Confirm by heading over to the Event Hub resource within the Event Hub Namespace; the `Overview` section contains some charts showing the number of requests coming in.
-  ![Traffic](EventHubs/9.png)
+1. x
+    ```sh
+    # __LocalHost__
+    az container restart --name $repository --resource-group $group
+    az container logs --name $repository --resource-group $group --follow
+    ```
+
+
 
 ---
 

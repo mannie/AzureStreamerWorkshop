@@ -7,7 +7,7 @@ Return to [Overview](ReadMe.md).
 
 
 
-In this sections, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+In this section, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
 
 **Section Outline**
 1. [Creating the Staging VM](#creating-the-staging-vm)
@@ -22,7 +22,6 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 
 ## Creating the Staging VM
-*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
 1. Using the [Azure Portal](https://portal.azure.com), create the Virtual Machine that will act as our working environment as we deploy the streamer app. Click on `Create a resource`. In the search box that appears, search for `centos` and select `CentOS 7.6`.
   ![Create a resource](ACI/VM/1.png)
@@ -52,7 +51,6 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 
 ## Configuring the VM
-*If you already have an active Docker and Git installation, feel free to [skip this step](#obtaining-the-streamer-app).*
 
 1. SSH into your new VM via CLI using the login info provided at creation time:
     ```sh
@@ -66,57 +64,9 @@ In this sections, we will deploy the streamer app into Azure to run in Container
     ```
     To confirm that you want to continue accessing the VM, type `yes` and hit `Enter`.
 
-1. Once you've successfully logged in, the following commands to install Docker and its dependencies, as per the [Docker documentation](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/centos/#install-using-the-repository)). You will be prompted for your password and for confirmation; enter it and hit `Enter`.
+1. x. You will be prompted for your password and for confirmation; enter it and hit `Enter`.
     ```sh
-    sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -y docker-ce
-    ```
-
-1. Start the Docker engine.
-    ```sh
-    sudo systemctl start docker
-    ```
-
-1. Verify that Docker installed correctly by running the `hello-world` image.
-    ```sh
-    sudo docker run hello-world
-    ```
-    You should see some output similar to the following (this confirms that Docker is correctly installed):
-    ```
-    Hello from Docker!
-    This message shows that your installation appears to be working correctly.
-
-    To generate this message, Docker took the following steps:
-     1. The Docker client contacted the Docker daemon.
-     2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
-        (amd64)
-     3. The Docker daemon created a new container from that image which runs the
-        executable that produces the output you are currently reading.
-     4. The Docker daemon streamed that output to the Docker client, which sent it
-        to your terminal.
-
-    To try something more ambitious, you can run an Ubuntu container with:
-     $ docker run -it ubuntu bash
-
-    Share images, automate workflows, and more with a free Docker ID:
-     https://hub.docker.com/
-
-    For more examples and ideas, visit:
-     https://docs.docker.com/get-started/
-     ```
-
-1. Install the Git SCM tool so that we can obtain a local copy of the streamer app later.
-    ```sh
-    sudo yum install -y git
-    ```
-    Use the following command to confirm the installation...
-    ```sh
-    which git
-    ```
-    ...which should yield the following result:
-    ```
-    /usr/bin/git
+    curl -s https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/Portal/ACI/InstallDevTools.sh | sudo bash
     ```  
 
 
@@ -143,31 +93,40 @@ In this sections, we will deploy the streamer app into Azure to run in Container
     ```
     ...and find that a new directory is available: `EventStreamer`. Change directory into the project's root, and list the contents.
     ```
-    cd EventStreamer
-    ls -F
+    cd EventStreamer && ls -F
     ```
     You don't need to know what to do with this folder structure yet: just note that the `Dockerfile` file exists as we will update this later.
     ```
-    Dockerfile  EventStreamer.xcodeproj/  Package.swift  README.md  Sources/  Tests/
+    Container.gif  Dockerfile  Package.swift  PrepareXCodeProj.sh*  README.md  Sources/  Tests/  Xcode.gif
     ```
 
 1. Build the app and run it locally.
     ```sh
-    sudo docker build --tag streamer .
-    sudo docker run --interactive --tty --rm streamer
+    app=__app_name_or_tag__ # example: app=streamer
+    sudo docker build --tag $app .
+    sudo docker run --interactive --tty --rm $app
     ```
     Once the app finishes building and starts running, the following output should be somewhat familiar:
     ```
-    Linking ./.build/x86_64-unknown-linux/debug/EventStreamer
-    2019-02-28 22:12:56		with...	50 		["name": "withdrawal", "current": 50, "initial": 50]
-    2019-02-28 22:12:56		depo...	1000 		["name": "deposit", "current": 1000, "initial": 1000]
-    2019-02-28 22:12:57		purc...	10 		["name": "purchase", "current": 10, "initial": 10]
-    2019-02-28 22:12:58		purc...	10 		["name": "purchase", "current": 10, "initial": 10, "previous": 10]
-    2019-02-28 22:12:59		purc...	12 		["name": "purchase", "current": 12, "initial": 10, "previous": 10]
-    2019-02-28 22:13:00		with...	56 		["name": "withdrawal", "current": 56, "initial": 50, "previous": 50]
-    2019-02-28 22:13:02		purc...	12 		["name": "purchase", "current": 12, "initial": 10, "previous": 12]
-    2019-02-28 22:13:03		depo...	1000 		["name": "deposit", "current": 1000, "initial": 1000, "previous": 1000]
-    2019-02-28 22:13:05		purc...	14 		["name": "purchase", "current": 14, "initial": 10, "previous": 12]
+    ...
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 deposit
+
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 withdrawal
+
+    STREAM INFO
+    	endpoint	 n/a
+    	name		 purchase
+
+    2019-05-03 19:28:43		depo...	1000 		["initial": 1000, "current": 1000, "name": "deposit"]
+    2019-05-03 19:28:43		with...	50 		["initial": 50, "current": 50, "name": "withdrawal"]
+    2019-05-03 19:28:44		purc...	10 		["name": "purchase", "current": 10, "initial": 10]
+    2019-05-03 19:28:47		purc...	10 		["previous": 10, "initial": 10, "name": "purchase", "current": 10]
+    2019-05-03 19:28:47		with...	52 		["previous": 50, "current": 52, "name": "withdrawal", "initial": 50]
+    2019-05-03 19:28:48		purc...	12 		["previous": 10, "initial": 10, "name": "purchase", "current": 12]
     ...
     ```
     To stop the streamer, hit  `Ctrl + C`.
@@ -194,7 +153,7 @@ In this sections, we will deploy the streamer app into Azure to run in Container
 
 1. In our CLI, we want to run the following commands in order to push the container image into our registry. Be sure to replace `registry=address.to.registry` with the appropriate value (e.g. `registry=streamer.azurecr.io`).
     ```sh
-    registry=address.to.registry # example streamer.azurecr.io
+    registry=__address_to_registry__ # example: registry=streamer.azurecr.io
 
     sudo docker login $registry # enter the Username and Password values from the previous step when/if prompted.
     sudo docker tag streamer $registry/streamer

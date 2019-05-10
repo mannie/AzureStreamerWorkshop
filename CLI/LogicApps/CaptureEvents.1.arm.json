@@ -1,0 +1,77 @@
+{
+    "$schema" : "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion" : "1.0.0.0",
+    "parameters" : {
+        "connections_eventhubs_externalid" : {
+            "defaultValue" : "[concat(resourceGroup().id, '/providers/Microsoft.Web/connections/eventhubs')]",
+            "type" : "String"
+        },
+        "eventhubs_hub_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "workflows_parent_name" : {
+            "defaultValue" : "CaptureEvents",
+            "type" : "String"
+        }
+    },
+    "variables" : {},
+    "resources" : [
+        {
+            "type" : "Microsoft.Logic/workflows",
+            "apiVersion" : "2017-07-01",
+            "name" : "[parameters('workflows_parent_name')]",
+            "location" : "eastus2",
+            "properties" : {
+                "state" : "Enabled",
+                "definition" : {
+                    "$schema" : "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion" : "1.0.0.0",
+                    "parameters" : {
+                        "$connections" : {
+                            "defaultValue" : {},
+                            "type" : "Object"
+                        }
+                    },
+                    "triggers" : {
+                        "When_events_are_available_in_Event_Hub" : {
+                            "recurrence" : {
+                                "frequency" : "Second",
+                                "interval" : 1
+                            },
+                            "splitOn" : "@triggerBody()",
+                            "type" : "ApiConnection",
+                            "inputs" : {
+                                "host" : {
+                                    "connection" : {
+                                        "name" : "@parameters('$connections')['eventhubs']['connectionId']"
+                                    }
+                                },
+                                "method" : "get",
+                                "path" : "[concat('/@{encodeURIComponent(''', parameters('eventhubs_hub_name'), ''')}/events/batch/head')]",
+                                "queries" : {
+                                    "consumerGroupName" : "$Default",
+                                    "contentType" : "application/json",
+                                    "maximumEventsCount" : 50
+                                }
+                            }
+                        }
+                    },
+                    "actions" : {},
+                    "outputs" : {}
+                },
+                "parameters" : {
+                    "$connections" : {
+                        "value" : {
+                            "eventhubs" : {
+                                "connectionId" : "[parameters('connections_eventhubs_externalid')]",
+                                "connectionName" : "eventhubs",
+                                "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/eastus2/managedApis/eventhubs')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

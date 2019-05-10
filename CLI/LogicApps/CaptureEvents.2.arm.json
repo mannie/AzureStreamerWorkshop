@@ -1,0 +1,176 @@
+{
+    "$schema" : "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion" : "1.0.0.0",
+    "parameters" : {
+        "connections_documentdb_externalid" : {
+            "defaultValue" : "[concat(resourceGroup().id, '/providers/Microsoft.Web/connections/documentdb')]",
+            "type" : "String"
+        },
+        "connections_eventhubs_externalid" : {
+            "defaultValue" : "[concat(resourceGroup().id, '/providers/Microsoft.Web/connections/eventhubs')]",
+            "type" : "String"
+        },
+        "cosmosdb_database_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "cosmosdb_collection_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "eventhubs_hub_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "workflows_parent_name" : {
+            "defaultValue" : "CaptureEvents",
+            "type" : "String"
+        }
+    },
+    "variables" : {},
+    "resources" : [
+        {
+            "type" : "Microsoft.Logic/workflows",
+            "apiVersion" : "2017-07-01",
+            "name" : "[parameters('workflows_parent_name')]",
+            "location" : "eastus2",
+            "properties" : {
+                "state" : "Enabled",
+                "definition" : {
+                    "$schema" : "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion" : "1.0.0.0",
+                    "parameters" : {
+                        "$connections" : {
+                            "defaultValue" : {},
+                            "type" : "Object"
+                        }
+                    },
+                    "triggers" : {
+                        "When_events_are_available_in_Event_Hub" : {
+                            "recurrence" : {
+                                "frequency" : "Second",
+                                "interval" : 1
+                            },
+                            "splitOn" : "@triggerBody()",
+                            "type" : "ApiConnection",
+                            "inputs" : {
+                                "host" : {
+                                    "connection" : {
+                                        "name" : "@parameters('$connections')['eventhubs']['connectionId']"
+                                    }
+                                },
+                                "method" : "get",
+                                "path" : "[concat('/@{encodeURIComponent(''', parameters('eventhubs_hub_name'), ''')}/events/batch/head')]",
+                                "queries" : {
+                                    "consumerGroupName" : "$Default",
+                                    "contentType" : "application/json",
+                                    "maximumEventsCount" : 50
+                                }
+                            }
+                        }
+                    },
+                    "actions" : {
+                        "Initialize_variable" : {
+                            "runAfter" : {},
+                            "type" : "InitializeVariable",
+                            "inputs" : {
+                                "variables" : [
+                                    {
+                                        "name" : "ID",
+                                        "type" : "String",
+                                        "value" : "@{triggerBody()?['SystemProperties']?['SequenceNumber']}-@{triggerBody()?['SystemProperties']?['Offset']}"
+                                    }
+                                ]
+                            }
+                        },
+                        "Parse_JSON" : {
+                            "runAfter" : {
+                                "Initialize_variable" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "ParseJson",
+                            "inputs" : {
+                                "content" : "@triggerBody()?['ContentData']",
+                                "schema" : {
+                                    "properties" : {
+                                        "current" : {
+                                            "type" : "integer"
+                                        },
+                                        "initial" : {
+                                            "type" : "integer"
+                                        },
+                                        "name" : {
+                                            "type" : "string"
+                                        },
+                                        "previous" : {
+                                            "type" : "integer"
+                                        },
+                                        "timestamp" : {
+                                            "type" : "integer"
+                                        }
+                                    },
+                                    "type" : "object"
+                                }
+                            }
+                        },
+                        "Compose" : {
+                            "runAfter" : {
+                                "Initialize_variable" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "Compose",
+                            "inputs" : {
+                                "event" : "@triggerBody()?['ContentData']",
+                                "id" : "@variables('ID')",
+                                "properties" : "@triggerBody()?['Properties']"
+                            }
+                        },
+                        "Create_or_update_document" : {
+                            "runAfter" : {
+                                "Compose" : [
+                                    "Succeeded"
+                                ],
+                                "Parse_JSON" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "ApiConnection",
+                            "inputs" : {
+                                "body" : "@outputs('Compose')",
+                                "headers" : {
+                                    "x-ms-documentdb-raw-partitionkey" : "\"@{body('Parse_JSON')?['name']}\""
+                                },
+                                "host" : {
+                                    "connection" : {
+                                        "name" : "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method" : "post",
+                                "path" : "[concat('/dbs/@{encodeURIComponent(''', parameters('cosmosdb_database_name'), ''')}/colls/@{encodeURIComponent(''', parameters('cosmosdb_collection_name'), ''')}/docs')]"
+                            }
+                        }
+                    },
+                    "outputs" : {}
+                },
+                "parameters" : {
+                    "$connections" : {
+                        "value" : {
+                            "documentdb" : {
+                                "connectionId" : "[parameters('connections_documentdb_externalid')]",
+                                "connectionName" : "documentdb",
+                                "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/eastus2/managedApis/documentdb')]"
+                            },
+                            "eventhubs" : {
+                                "connectionId" : "[parameters('connections_eventhubs_externalid')]",
+                                "connectionName" : "eventhubs",
+                                "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/eastus2/managedApis/eventhubs')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

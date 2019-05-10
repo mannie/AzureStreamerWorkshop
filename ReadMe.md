@@ -26,7 +26,7 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 | Interface | Description | Level |
 | --- | --- | --- |
 | [Portal](Portal) | Use a combination of the Azure Portal and the CLI, where required, to work through the workshop. | Beginner |
-| [CLI](CLI) | Work through the workshop entirely via Command Line Interface. | Intermediate |
+| [CLI](CLI) | Work through the workshop entirely via Command Line Interface; this assumes familiarity with the concepts presented in the preceding level. | Intermediate |
 
 
 
