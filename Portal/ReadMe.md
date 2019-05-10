@@ -1,5 +1,5 @@
 # Azure Portal
-Return to [Introduction](../ReadMe.md).
+Return to [Getting Started with Azure Portal](../ReadMe.md).
 
 
 

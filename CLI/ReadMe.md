@@ -1,4 +1,4 @@
-# Command Line Interface
+# Getting Started with Azure CLI
 Return to [Introduction](../ReadMe.md).
 
 

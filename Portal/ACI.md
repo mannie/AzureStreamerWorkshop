@@ -1,5 +1,5 @@
 # Deploying The Streaming App Into Azure
-Return to [Overview](ReadMe.md).
+Return to [Getting Started with Azure Portal](ReadMe.md).
 
 
 
