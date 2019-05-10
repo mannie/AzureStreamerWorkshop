@@ -93,7 +93,7 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
-    db=events
+    db=__name__ #example db=events
     az cosmosdb database create \
         --db-name $db \
         --name $cosmos \
@@ -114,7 +114,7 @@ In this section, we will create a Logic App to respond to each event being strea
 
 1. x
     ```sh
-    collection=captured
+    collection=__name__ # example collection=captured
     az cosmosdb collection create \
         --collection-name $collection \
         --db-name $db \
