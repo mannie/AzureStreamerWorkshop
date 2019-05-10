@@ -14,4 +14,4 @@ Congratulations! You've made it to the end of the workshop. Remember, we've only
 
 
 
-Return to [Introduction](../ReadMe.md).
+Return to [Introduction](../ReadMe.md#how-would-you-like-to-complete-the-workshop).
