@@ -202,7 +202,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 1. x
     ```sh
     # __RemoteHost__
-    curl --silent --show-error --output HttpTrigger1/run.csx https://github.com/mannie/AzureStreamerWorkshop/blob/cli/CLI/Functions/Function.csx
+    curl --silent --show-error --output HttpTrigger1/run.csx https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/Functions/Function.csx
     ```   
 
 1. x
