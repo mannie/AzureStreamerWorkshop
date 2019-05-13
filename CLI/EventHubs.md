@@ -95,12 +95,6 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 ## Updating the Streamer App
 
-1. In our CLI, which should currently be in the `~/EventStreamer` folder, we're going to open the `Dockerfile` file for editing. If you're not in this folder for some reason, `cd` into it.
-    ```sh
-    # __RemoteHost__
-    nano Dockerfile
-    ```
-
 1. Update your `Dockerfile` with the info for your Event Hub. `SASPolicyName` is the name of the SAS Policy whose value we copied (`RootManageSharedAccessKey`), while `SASPolicyKey` is the value we copied. `EventHubNamespace` and `EventHubPath` are the globally unique name of the Event Hub Namespace and that of the Event Hub, respectively. Your `Dockerfile` should look something like this; only the lines beginning with `ENV` should have changed.
     ```
     FROM swift
@@ -114,13 +108,24 @@ In this section, we will create and configure our Event Hub to ingest data from 
     CMD swift run
     ```
     ```sh
-    # __LocalHost__
-    authorizationRule=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
-    echo $authorizationRule
-    az eventhubs namespace authorization-rule keys list --name $authorizationRule --namespace-name $namespace --resource-group $group --query primaryKey --output tsv
+    # __RemoteHost__
+    group=__name_of_resource_group__ # example group=StreamerCLI
+
+    namespace=__eventhub_namespace__ # example: namespace=streamercli
+    eventhub=__path_to_eventhub__ # example: eventhub=cli
+
+    policy=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
+    key=$(az eventhubs namespace authorization-rule keys list --name $policy --namespace-name $namespace --resource-group $group --query primaryKey --output tsv)
+
+    curl --silent --show-error https://raw.githubusercontent.com/mannie/EventStreamer/master/Dockerfile | \
+        sed -E "s (SASPolicyName=.*\")(\") \1$policy\2 " | \
+        sed -E "s (SASPolicyKey=.*\")(\") \1$key\2 " | \
+        sed -E "s (EventHubNamespace=.*\")(\") \1$namespace\2 " | \
+        sed -E "s (EventHubPath=.*\")(\") \1$eventhub\2 " > \
+        Dockerfile
     ```
 
-1. Press `Ctrl + X` to exit out of the text editor. This will prompt you to save your changes; type `Y`. You will now be prompted to type in the file name to save to; leave this value unchanged (i.e. `Dockerfile`) and hit `Enter`. To confirm our changes were successfully saved, use the `cat` command.
+1. x
     ```sh
     # __RemoteHost__
     cat Dockerfile
