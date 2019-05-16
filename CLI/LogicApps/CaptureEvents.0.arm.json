@@ -3,7 +3,10 @@
     "contentVersion" : "1.0.0.0",
     "parameters" : {
         "workflows_parent_name" : {
-            "defaultValue" : "CaptureEvents",
+            "type" : "String"
+        },
+        "workflows_parent_location" : {
+            "defaultValue" : "[resourceGroup().location]",
             "type" : "String"
         }
     },
@@ -13,7 +16,7 @@
             "type" : "Microsoft.Logic/workflows",
             "apiVersion" : "2017-07-01",
             "name" : "[parameters('workflows_parent_name')]",
-            "location" : "eastus2",
+            "location" : "[parameters('workflows_parent_location')]",
             "properties" : {
                 "state" : "Enabled",
                 "definition" : {

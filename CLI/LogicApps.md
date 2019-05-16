@@ -53,7 +53,7 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
-    cosmos=__globally_unique_name__ # example cosmosdb=streamercli
+    cosmos=__globally_unique_name__ # example cosmos=streamercli
     az cosmosdb create \
         --name $cosmos \
         --resource-group $group \
@@ -167,9 +167,21 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
+    function __param { echo "'$1' : { 'value' : '$2' }"; }
+    ```
+
+1. x
+    ```sh
+    # __LocalHost__
+    logicapp=__name_of_your_logic_app__ # example: logicapp=CaptureEvents
+
     az group deployment create \
         --resource-group $group \
-        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.0.arm.json
+        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.0.arm.json \
+        --parameters "{ \
+                $(__param workflows_parent_name $logicapp), \
+                $(__param workflows_parent_location $location) \
+            }"
     ```
     ```json
     {
@@ -177,27 +189,53 @@ In this section, we will create a Logic App to respond to each event being strea
       "location": null,
       "name": "CaptureEvents.0.arm",
       "properties": {
-        "correlationId": "81c04a57-ec47-4227-ab5d-5aef1b8f548b",
+        "correlationId": "0cc607ed-e201-4108-9874-c7119787a610",
         "debugSetting": null,
         "dependencies": [],
-        "duration": "PT6.7523756S",
+        "duration": "PT1.6909185S",
         "mode": "Incremental",
         "onErrorDeployment": null,
-        "outputResources": [ ... ],
+        "outputResources": [
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
+            "resourceGroup": "StreamerCLI"
+          }
+        ],
         "outputs": null,
         "parameters": {
+          "workflows_parent_location": {
+            "type": "String",
+            "value": "eastus2"
+          },
           "workflows_parent_name": {
             "type": "String",
             "value": "CaptureEvents"
           }
         },
         "parametersLink": null,
-        "providers": [ ... ],
+        "providers": [
+          {
+            "id": null,
+            "namespace": "Microsoft.Logic",
+            "registrationState": null,
+            "resourceTypes": [
+              {
+                "aliases": null,
+                "apiVersions": null,
+                "locations": [
+                  "eastus2"
+                ],
+                "properties": null,
+                "resourceType": "workflows"
+              }
+            ]
+          }
+        ],
         "provisioningState": "Succeeded",
         "template": null,
-        "templateHash": "1440037073524055121",
+        "templateHash": "11195913884786892628",
         "templateLink": null,
-        "timestamp": "2019-05-10T22:25:35.446673+00:00"
+        "timestamp": "2019-05-16T20:33:52.313716+00:00"
       },
       "resourceGroup": "StreamerCLI",
       "type": null
@@ -207,11 +245,16 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
+    _policy=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
+    connexion_EH=$(az eventhubs namespace authorization-rule keys list --name $_policy --namespace-name $namespace --resource-group $group --query primaryConnectionString --output tsv)
     az group deployment create \
         --resource-group $group \
         --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.1.arm.json \
         --parameters "{ \
-                'eventhubs_hub_name' : { 'value' : '$eventhub' } \
+                $(__param workflows_parent_name $logicapp), \
+                $(__param workflows_parent_location $location), \
+                $(__param eventhubs_hub_name $eventhub), \
+                $(__param eventhubs_hub_connection_string $connexion_EH) \
             }"
     ```
     ```json
@@ -220,22 +263,53 @@ In this section, we will create a Logic App to respond to each event being strea
       "location": null,
       "name": "CaptureEvents.1.arm",
       "properties": {
-        "correlationId": "0ca5969a-0012-4fd8-bbf7-5bfaacbab4a0",
+        "correlationId": "b10858cc-d978-4ae9-bee2-a6b9b9174386",
         "debugSetting": null,
-        "dependencies": [],
-        "duration": "PT4.0172356S",
+        "dependencies": [
+          {
+            "dependsOn": [
+              {
+                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
+                "resourceGroup": "StreamerCLI",
+                "resourceName": "eventhubs",
+                "resourceType": "Microsoft.Web/connections"
+              }
+            ],
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
+            "resourceGroup": "StreamerCLI",
+            "resourceName": "CaptureEvents",
+            "resourceType": "Microsoft.Logic/workflows"
+          }
+        ],
+        "duration": "PT6.2839354S",
         "mode": "Incremental",
         "onErrorDeployment": null,
-        "outputResources": [ ... ],
+        "outputResources": [
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
+            "resourceGroup": "StreamerCLI"
+          },
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
+            "resourceGroup": "StreamerCLI"
+          }
+        ],
         "outputs": null,
         "parameters": {
-          "connections_eventhubs_externalid": {
+          "connections_eventhubs_name": {
             "type": "String",
-            "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs"
+            "value": "eventhubs"
+          },
+          "eventhubs_hub_connection_string": {
+            "type": "SecureString"
           },
           "eventhubs_hub_name": {
             "type": "String",
             "value": "cli"
+          },
+          "workflows_parent_location": {
+            "type": "String",
+            "value": "eastus2"
           },
           "workflows_parent_name": {
             "type": "String",
@@ -243,12 +317,45 @@ In this section, we will create a Logic App to respond to each event being strea
           }
         },
         "parametersLink": null,
-        "providers": [ ... ],
+        "providers": [
+          {
+            "id": null,
+            "namespace": "Microsoft.Web",
+            "registrationState": null,
+            "resourceTypes": [
+              {
+                "aliases": null,
+                "apiVersions": null,
+                "locations": [
+                  "eastus2"
+                ],
+                "properties": null,
+                "resourceType": "connections"
+              }
+            ]
+          },
+          {
+            "id": null,
+            "namespace": "Microsoft.Logic",
+            "registrationState": null,
+            "resourceTypes": [
+              {
+                "aliases": null,
+                "apiVersions": null,
+                "locations": [
+                  "eastus2"
+                ],
+                "properties": null,
+                "resourceType": "workflows"
+              }
+            ]
+          }
+        ],
         "provisioningState": "Succeeded",
         "template": null,
-        "templateHash": "9351925465353901771",
+        "templateHash": "8974504646592131398",
         "templateLink": null,
-        "timestamp": "2019-05-10T22:29:06.345254+00:00"
+        "timestamp": "2019-05-16T20:41:27.604850+00:00"
       },
       "resourceGroup": "StreamerCLI",
       "type": null
@@ -281,13 +388,19 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
+    connexion_DB=$(az cosmosdb list-keys --name $cosmos --resource-group $group --query primaryMasterKey --output tsv)
     az group deployment create \
         --resource-group $group \
         --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.2.arm.json \
         --parameters "{ \
-                'eventhubs_hub_name' : { 'value' : '$eventhub' }, \
-                'cosmosdb_database_name' : { 'value' : '$db' }, \
-                'cosmosdb_collection_name' : { 'value' : '$collection' } \
+                $(__param workflows_parent_name $logicapp), \
+                $(__param workflows_parent_location $location), \
+                $(__param eventhubs_hub_name $eventhub), \
+                $(__param eventhubs_hub_connection_string $connexion_EH), \
+                $(__param documentdb_account_name $cosmos), \
+                $(__param documentdb_db_name $db), \
+                $(__param documentdb_collection_name $collection), \
+                $(__param documentdb_access_key $connexion_DB) \
             }"
     ```
     ```json
@@ -296,22 +409,128 @@ In this section, we will create a Logic App to respond to each event being strea
       "location": null,
       "name": "CaptureEvents.2.arm",
       "properties": {
-        "correlationId": "fc58b1e2-9cb9-4b7c-8c3a-a9439cdc0d52",
+        "correlationId": "754065ee-cd8e-4d7c-9c56-e96a23c7ce24",
         "debugSetting": null,
-        "dependencies": [],
-        "duration": "PT4.6728183S",
+        "dependencies": [
+          {
+            "dependsOn": [
+              {
+                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/documentdb",
+                "resourceGroup": "StreamerCLI",
+                "resourceName": "documentdb",
+                "resourceType": "Microsoft.Web/connections"
+              },
+              {
+                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
+                "resourceGroup": "StreamerCLI",
+                "resourceName": "eventhubs",
+                "resourceType": "Microsoft.Web/connections"
+              }
+            ],
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
+            "resourceGroup": "StreamerCLI",
+            "resourceName": "CaptureEvents",
+            "resourceType": "Microsoft.Logic/workflows"
+          }
+        ],
+        "duration": "PT6.0503344S",
         "mode": "Incremental",
         "onErrorDeployment": null,
-        "outputResources": [ ... ],
+        "outputResources": [
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
+            "resourceGroup": "StreamerCLI"
+          },
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/documentdb",
+            "resourceGroup": "StreamerCLI"
+          },
+          {
+            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
+            "resourceGroup": "StreamerCLI"
+          }
+        ],
         "outputs": null,
-        "parameters": { ... },
+        "parameters": {
+          "connections_documentdb_name": {
+            "type": "String",
+            "value": "documentdb"
+          },
+          "connections_eventhubs_name": {
+            "type": "String",
+            "value": "eventhubs"
+          },
+          "documentdb_access_key": {
+            "type": "SecureString"
+          },
+          "documentdb_account_name": {
+            "type": "String",
+            "value": "streamercli"
+          },
+          "documentdb_collection_name": {
+            "type": "String",
+            "value": "captured"
+          },
+          "documentdb_db_name": {
+            "type": "String",
+            "value": "events"
+          },
+          "eventhubs_hub_connection_string": {
+            "type": "SecureString"
+          },
+          "eventhubs_hub_name": {
+            "type": "String",
+            "value": "cli"
+          },
+          "workflows_parent_location": {
+            "type": "String",
+            "value": "eastus2"
+          },
+          "workflows_parent_name": {
+            "type": "String",
+            "value": "CaptureEvents"
+          }
+        },
         "parametersLink": null,
-        "providers": [ ... ],
+        "providers": [
+          {
+            "id": null,
+            "namespace": "Microsoft.Web",
+            "registrationState": null,
+            "resourceTypes": [
+              {
+                "aliases": null,
+                "apiVersions": null,
+                "locations": [
+                  "eastus2"
+                ],
+                "properties": null,
+                "resourceType": "connections"
+              }
+            ]
+          },
+          {
+            "id": null,
+            "namespace": "Microsoft.Logic",
+            "registrationState": null,
+            "resourceTypes": [
+              {
+                "aliases": null,
+                "apiVersions": null,
+                "locations": [
+                  "eastus2"
+                ],
+                "properties": null,
+                "resourceType": "workflows"
+              }
+            ]
+          }
+        ],
         "provisioningState": "Succeeded",
         "template": null,
-        "templateHash": "9644914800481869788",
+        "templateHash": "8927459570445292905",
         "templateLink": null,
-        "timestamp": "2019-05-10T22:33:21.100645+00:00"
+        "timestamp": "2019-05-16T20:42:32.664822+00:00"
       },
       "resourceGroup": "StreamerCLI",
       "type": null
