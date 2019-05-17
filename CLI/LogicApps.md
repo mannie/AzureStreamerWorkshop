@@ -167,6 +167,7 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
+    src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
     function __param { echo "'$1' : { 'value' : '$2' }"; }
     ```
 
@@ -177,7 +178,7 @@ In this section, we will create a Logic App to respond to each event being strea
 
     az group deployment create \
         --resource-group $group \
-        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.0.arm.json \
+        --template-uri $src/LogicApps/CaptureEvents.0.arm.json \
         --parameters "{ \
                 $(__param workflows_parent_name $logicapp), \
                 $(__param workflows_parent_location $location) \
@@ -245,16 +246,29 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
-    _policy=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
-    connexion_EH=$(az eventhubs namespace authorization-rule keys list --name $_policy --namespace-name $namespace --resource-group $group --query primaryConnectionString --output tsv)
+    printf -v __getEventHubsSharedPolicy '%q ' \
+        az eventhubs namespace authorization-rule list \
+            --namespace-name $namespace \
+            --resource-group $group \
+            --query "[?contains(rights, 'Send')].name" \
+            --output tsv
+
+    printf -v __getEventHubsConnectionString '%q ' \
+        az eventhubs namespace authorization-rule keys list \
+            --name `eval $__getEventHubsSharedPolicy` \
+            --namespace-name $namespace \
+            --resource-group $group \
+            --query primaryConnectionString \
+            --output tsv
+
     az group deployment create \
         --resource-group $group \
-        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.1.arm.json \
+        --template-uri $src/LogicApps/CaptureEvents.1.arm.json \
         --parameters "{ \
                 $(__param workflows_parent_name $logicapp), \
                 $(__param workflows_parent_location $location), \
                 $(__param eventhubs_hub_name $eventhub), \
-                $(__param eventhubs_hub_connection_string $connexion_EH) \
+                $(__param eventhubs_hub_connection_string `eval $__getEventHubsConnectionString`) \
             }"
     ```
     ```json
@@ -388,19 +402,25 @@ In this section, we will create a Logic App to respond to each event being strea
 1. x
     ```sh
     # __LocalHost__
-    connexion_DB=$(az cosmosdb list-keys --name $cosmos --resource-group $group --query primaryMasterKey --output tsv)
+    printf -v __getCosmosDBAccessKey '%q ' \
+        az cosmosdb list-keys \
+            --name $cosmos \
+            --resource-group $group \
+            --query primaryMasterKey \
+            --output tsv
+
     az group deployment create \
         --resource-group $group \
-        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.2.arm.json \
+        --template-uri $src/LogicApps/CaptureEvents.2.arm.json \
         --parameters "{ \
                 $(__param workflows_parent_name $logicapp), \
                 $(__param workflows_parent_location $location), \
                 $(__param eventhubs_hub_name $eventhub), \
-                $(__param eventhubs_hub_connection_string $connexion_EH), \
+                $(__param eventhubs_hub_connection_string `eval $__getEventHubsConnectionString`), \
                 $(__param documentdb_account_name $cosmos), \
                 $(__param documentdb_db_name $db), \
                 $(__param documentdb_collection_name $collection), \
-                $(__param documentdb_access_key $connexion_DB) \
+                $(__param documentdb_access_key `eval $__getCosmosDBAccessKey`) \
             }"
     ```
     ```json

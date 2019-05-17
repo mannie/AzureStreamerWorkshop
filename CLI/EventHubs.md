@@ -114,12 +114,24 @@ In this section, we will create and configure our Event Hub to ingest data from 
     namespace=__eventhub_namespace__ # example: namespace=streamercli
     eventhub=__path_to_eventhub__ # example: eventhub=cli
 
-    policy=$(az eventhubs namespace authorization-rule list --namespace-name $namespace --resource-group $group --query "[?contains(rights, 'Send')].name" --output tsv | head -n 1)
-    key=$(az eventhubs namespace authorization-rule keys list --name $policy --namespace-name $namespace --resource-group $group --query primaryKey --output tsv)
+    printf -v __getSharedPolicy '%q ' \
+        az eventhubs namespace authorization-rule list \
+            --namespace-name $namespace \
+            --resource-group $group \
+            --query "[?contains(rights, 'Send')].name" \
+            --output tsv
+
+    printf -v __getAccessKey '%q ' \
+        az eventhubs namespace authorization-rule keys list \
+            --name `eval $__getSharedPolicy` \
+            --namespace-name $namespace \
+            --resource-group $group \
+            --query primaryKey \
+            --output tsv
 
     curl --silent --show-error https://raw.githubusercontent.com/mannie/EventStreamer/master/Dockerfile | \
-        sed -E "s (SASPolicyName=.*\")(\") \1$policy\2 " | \
-        sed -E "s (SASPolicyKey=.*\")(\") \1$key\2 " | \
+        sed -E "s (SASPolicyName=.*\")(\") \1`eval $__getSharedPolicy`\2 " | \
+        sed -E "s (SASPolicyKey=.*\")(\") \1`eval $__getAccessKey`\2 " | \
         sed -E "s (EventHubNamespace=.*\")(\") \1$namespace\2 " | \
         sed -E "s (EventHubPath=.*\")(\") \1$eventhub\2 " > \
         Dockerfile

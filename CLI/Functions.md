@@ -202,7 +202,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 1. x
     ```sh
     # __RemoteHost__
-    curl --silent --show-error --output HttpTrigger1/run.csx https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/Functions/Function.csx
+    curl --silent --show-error --output HttpTrigger1/run.csx $src/Functions/Function.csx
     ```   
 
 1. x
@@ -278,7 +278,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     # __LocalHost__
     az group deployment create \
         --resource-group $group \
-        --template-uri https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI/LogicApps/CaptureEvents.3.arm.json \
+        --template-uri $src/Functions/CaptureEvents.3.arm.json \
         --parameters "{ \
                 $(__param workflows_parent_name $logicapp), \
                 $(__param workflows_parent_location $location), \
