@@ -57,7 +57,7 @@ echo "¯\_(ツ)_/¯. "
 1. x
     ```sh
     # __LocalHost__
-    az account set --subscription __subscription_name__ # example: az account set --subscription "AIRS"
+    az account set --subscription __subscription_name_or_id__ # example: az account set --subscription "AIRS"
     ```
 
 1. x
