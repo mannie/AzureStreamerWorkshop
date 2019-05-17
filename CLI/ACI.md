@@ -213,8 +213,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     sudo docker login $registry --username `eval $__getACRUsername` --password `eval $__getACRPassword`
     ```
     ```
-    Username: streamercli
-    Password:
+    WARNING! Using --password via the CLI is insecure. Use --password-stdin.
     WARNING! Your password will be stored unencrypted in /home/mannie/.docker/config.json.
     Configure a credential helper to remove this warning. See
     https://docs.docker.com/engine/reference/commandline/login/#credentials-store
