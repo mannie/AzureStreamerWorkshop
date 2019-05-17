@@ -5,7 +5,7 @@
 # This script does the following things:                                                                    #
 #   1. Installs Docker CE and all its dependencies.                                                         #
 #   2. Installs Git.                                                                                        #
-#                                                                                                           #          
+#                                                                                                           #
 # Given the nature of this script, it must be executed with elevated privileges, i.e. with `sudo`.          #
 #                                                                                                           #
 # Remember:                                                                                                 #
@@ -37,5 +37,5 @@ echo ""
 sudo yum install --assume-yes git
 
 echo ""
-echo "DEV TOOLS: Installied."
+echo "DEV TOOLS: Installed."
 echo ""

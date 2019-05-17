@@ -6,7 +6,7 @@
 #   1. Installs the Azure CLI and its dependencies.                                                         #
 #   2. Installs Docker CE and all its dependencies.                                                         #
 #   3. Installs the .NET SDK and the Azure Functions Core Tools.                                            #
-#                                                                                                           #          
+#                                                                                                           #
 # Given the nature of this script, it must be executed with elevated privileges, i.e. with `sudo`.          #
 #                                                                                                           #
 # Remember:                                                                                                 #
@@ -66,6 +66,5 @@ sudo apt-get update
 sudo apt-get install --assume-yes azure-functions-core-tools
 
 echo ""
-echo "DEV TOOLS: Installied."
+echo "DEV TOOLS: Installed."
 echo ""
-
