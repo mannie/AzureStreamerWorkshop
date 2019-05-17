@@ -78,8 +78,12 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     ```sh
     # __RemoteHost__
     src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
-    config=$src/ACI/InstallDevTools.sh
-    curl --silent --show-error $config | sudo bash
+    ```
+
+1. x
+    ```sh
+    # __RemoteHost__
+    curl --silent --show-error $src/ACI/InstallDevTools.sh | sudo bash
     ```
 
 1. x

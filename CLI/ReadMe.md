@@ -15,16 +15,16 @@ echo "You should enter this command in your local machine's environment."
 ```
 ```sh
 # __RemoteHost__
-echo "However, you should switch to the session in your Azure VM and execute this command there!"
+echo "However, you should switch to the session in your Azure VM and execute this command there."
 
 echo "This command is also meant to be executed remotely."
 ```
 ```sh
 echo "Feel free to execute this locally or in your Azure VM."
 echo "It may make sense to run the commands in whatever context you're currently in..."
-echo "...I mean... it's easier!"
+echo "...I mean... it's easier."
 
-echo "¯\_(ツ)_/¯. "
+echo "¯\_(ツ)_/¯"
 ```
 
 
@@ -57,7 +57,7 @@ echo "¯\_(ツ)_/¯. "
 1. x
     ```sh
     # __LocalHost__
-    az account set --subscription __subscription_name_or_id__ # example: az account set --subscription "AIRS"
+    az account set --subscription __subscription_name_or_id__ # example: az account set --subscription AIRS
     ```
 
 1. x
