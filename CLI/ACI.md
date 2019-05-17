@@ -210,7 +210,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     printf -v __getACRUsername '%q ' az acr credential show -n $acr -g $group --query username -o tsv
     printf -v __getACRPassword '%q ' az acr credential show -n $acr -g $group --query passwords[0].value -o tsv
 
-    sudo docker login $registry --username `eval ` --password `eval `
+    sudo docker login $registry --username `eval $__getACRUsername` --password `eval $__getACRPassword`
     ```
     ```
     Username: streamercli
