@@ -109,8 +109,6 @@ In this section, we will create and configure our Event Hub to ingest data from 
     ```
     ```sh
     # __RemoteHost__
-    group=__name_of_resource_group__ # example group=StreamerCLI
-
     namespace=__eventhub_namespace__ # example: namespace=streamercli
     eventhub=__path_to_eventhub__ # example: eventhub=cli
 

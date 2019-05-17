@@ -202,22 +202,16 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 1. x
     ```sh
     # __RemoteHost__
+    group=__name_of_your_resource_group__ # example: group=StreamerCLI
     acr=__name_of_your_newly_created_registry__ # example: acr=streamercli
+
     registry=$(az acr list --query "[?name=='$acr'].loginServer" --output tsv)
-    ```
 
-1. x
-    ```sh
-    # __RemoteHost__
-    sudo docker login $registry
-    ```
+    printf -v __getACRUsername '%q ' az acr credential show -n $acr -g $group --query username -o tsv
+    printf -v __getACRPassword '%q ' az acr credential show -n $acr -g $group --query passwords[0].value -o tsv
 
-    ```sh
-    # __LocalHost__
-    az acr credential show -n $acr -g $group --query username -o tsv
-    az acr credential show -n $acr -g $group --query passwords[0].value -o tsv
+    sudo docker login $registry --username `eval ` --password `eval `
     ```
-
     ```
     Username: streamercli
     Password:
