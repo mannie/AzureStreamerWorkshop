@@ -129,12 +129,14 @@ In this section, we will create and configure our Event Hub to ingest data from 
             --query primaryKey \
             --output tsv
 
-    curl --silent --show-error https://raw.githubusercontent.com/mannie/EventStreamer/master/Dockerfile | \
-        sed -E "s (SASPolicyName=.*\")(\") \1`eval $__getSharedPolicy`\2 " | \
-        sed -E "s (SASPolicyKey=.*\")(\") \1`eval $__getAccessKey`\2 " | \
-        sed -E "s (EventHubNamespace=.*\")(\") \1$namespace\2 " | \
-        sed -E "s (EventHubPath=.*\")(\") \1$eventhub\2 " > \
-        Dockerfile
+    function __env { echo "s ($1=.*\")(.*)(\") \1$2\3 "; } # Using [space] as the sed regex delimiter.
+
+    cat Dockerfile | \
+        sed -E "$(__env SASPolicyName `eval $__getSharedPolicy`)" | \
+        sed -E "$(__env SASPolicyKey `eval $__getAccessKey`)" | \
+        sed -E "$(__env EventHubNamespace $namespace)" | \
+        sed -E "$(__env EventHubPath $eventhub)" > \
+            Dockerfile
     ```
 
 1. x
