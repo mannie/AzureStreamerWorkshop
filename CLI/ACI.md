@@ -63,8 +63,8 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 1. SSH into your new VM via CLI using the login info provided at creation time:
     ```sh
     # __LocalHost__
-    printf -v __getIP '%q ' az vm list-ip-addresses --resource-group $group --query "[?virtualMachine.name=='$vm'].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv
-    ssh `eval $__getIP`
+    vmIP=$(az vm list-ip-addresses --resource-group $group --query "[?virtualMachine.name=='$vm'].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
+    ssh $vmIP
     ```
     You may receive a message (similar to this) asking you to confirm that you want to connect to the VM.
     ```
