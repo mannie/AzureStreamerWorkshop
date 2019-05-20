@@ -4,6 +4,7 @@
     "variables" : {},
     "parameters" : {
         "workflows_parent_name" : {
+            "defaultValue" : null,
             "type" : "String"
         },
         "workflows_parent_location" : {

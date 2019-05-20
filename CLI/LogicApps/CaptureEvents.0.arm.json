@@ -3,6 +3,7 @@
     "contentVersion" : "1.0.0.0",
     "parameters" : {
         "workflows_parent_name" : {
+            "defaultValue" : null,
             "type" : "String"
         },
         "workflows_parent_location" : {
