@@ -20,7 +20,9 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 ### Before You Start
 * Ensure that you have access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
 * Ensure that you have the Azure CLI `az` installed if you plan on working through the CLI path; follow these [instructions to install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). The Azure Cloud Shell has `az` readily available; this is a viable option if you prefer to not have `az` installed locally.
-* It may be worth preloading your API Management service (which will be required later in the workshop) as this service typically take a little while to deploy and provision; for more info on how to do so, see [Creating the API Management Service](APIM.md#creating-the-api-management-service).
+* It may be worth preloading your API Management service (which will be required later in the workshop) as this service typically take a little while to deploy and provision; for more info on how to do so, see the relevant section for your chosen path:
+  * [Portal](Portal/APIM.md#creating-the-api-management-service);
+  * [CLI](CLI/APIM.md#creating-the-api-management-service).
 
 ### How would you like to complete the workshop?
 | Interface | Description | Level |
