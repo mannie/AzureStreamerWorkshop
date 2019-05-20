@@ -50,7 +50,7 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Creating the Cosmos DB Store
 
-1. x
+1. Create a Cosmos DB account, giving it a globally unique name.
     ```sh
     # __LocalHost__
     cosmos=__globally_unique_name__ # example cosmos=streamercli
@@ -61,6 +61,7 @@ In this section, we will create a Logic App to respond to each event being strea
         --enable-multiple-write-locations true \
         --kind GlobalDocumentDB
     ```
+    Output:
     ```json
     {
       "capabilities": [],
@@ -90,7 +91,7 @@ In this section, we will create a Logic App to respond to each event being strea
     }
     ```
 
-1. x
+1. Create the database into which we would like to store our collections.
     ```sh
     # __LocalHost__
     db=__name__ #example db=events
@@ -99,7 +100,7 @@ In this section, we will create a Logic App to respond to each event being strea
         --name $cosmos \
         --resource-group $group
     ```
-
+    Output:
     ```json
     {
       "_colls": "colls/",
@@ -112,7 +113,7 @@ In this section, we will create a Logic App to respond to each event being strea
     }
     ```
 
-1. x
+1. Create a collection into which we would like to store our documents.
     ```sh
     collection=__name__ # example collection=captured
     az cosmosdb collection create \
@@ -123,7 +124,7 @@ In this section, we will create a Logic App to respond to each event being strea
         --resource-group $group \
         --throughput 400
     ```
-
+    Output:
     ```json
     {
       "collection": {
@@ -154,8 +155,6 @@ In this section, we will create a Logic App to respond to each event being strea
     }
     ```
 
-1. x
-
 
 
 ---
@@ -164,14 +163,14 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Creating the Logic App
 
-1. x
+1. Logic Apps are deployed into Azure using what are known as [Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager). Specify the source from which we would like to obtain our ARM templates and define a utility function to help us generate the parameters required by the ARM template deployment command.
     ```sh
     # __LocalHost__
     src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
     function __param { echo "'$1' : { 'value' : '$2' }"; }
     ```
 
-1. x
+1. Give the Logic App a name and deploy an empty logic app into Azure. Feel free to view the ARM template at `$src/LogicApps/CaptureEvents.0.arm.json`, cross referencing with the output, to get some idea into what's going on under the covers.
     ```sh
     # __LocalHost__
     logicapp=__name_of_your_logic_app__ # example: logicapp=CaptureEvents
@@ -184,6 +183,7 @@ In this section, we will create a Logic App to respond to each event being strea
                 $(__param workflows_parent_location $location) \
             }"
     ```
+    Output:
     ```json
     {
       "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.0.arm",
@@ -243,7 +243,7 @@ In this section, we will create a Logic App to respond to each event being strea
     }
     ```
 
-1. x
+1. Next we will deploy a version of the Logic App that listens to the specified Event Hub for events.
     ```sh
     # __LocalHost__
     printf -v __getEventHubsSharedPolicy '%q ' \
@@ -271,6 +271,7 @@ In this section, we will create a Logic App to respond to each event being strea
                 $(__param eventhubs_hub_connection_string `eval $__getEventHubsConnectionString`) \
             }"
     ```
+    Output:
     ```json
     {
       "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.1.arm",
@@ -309,62 +310,9 @@ In this section, we will create a Logic App to respond to each event being strea
           }
         ],
         "outputs": null,
-        "parameters": {
-          "connections_eventhubs_name": {
-            "type": "String",
-            "value": "eventhubs"
-          },
-          "eventhubs_hub_connection_string": {
-            "type": "SecureString"
-          },
-          "eventhubs_hub_name": {
-            "type": "String",
-            "value": "cli"
-          },
-          "workflows_parent_location": {
-            "type": "String",
-            "value": "eastus2"
-          },
-          "workflows_parent_name": {
-            "type": "String",
-            "value": "CaptureEvents"
-          }
-        },
+        "parameters": { ... },
         "parametersLink": null,
-        "providers": [
-          {
-            "id": null,
-            "namespace": "Microsoft.Web",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "connections"
-              }
-            ]
-          },
-          {
-            "id": null,
-            "namespace": "Microsoft.Logic",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "workflows"
-              }
-            ]
-          }
-        ],
+        "providers": [ ... ],
         "provisioningState": "Succeeded",
         "template": null,
         "templateHash": "8974504646592131398",
@@ -376,6 +324,7 @@ In this section, we will create a Logic App to respond to each event being strea
     }
     ```
 
+    *By this stage, you're expected to already cross-referencing the ARM templates with the output, or asking the proctor(s) for additional information on what this command is doing.*
 1. The `Overview` section of the Logic App should indicate that the Logic App has received and processed events (see the `Runs history` panel). If the `Runs history` isn't showing any activity, click the `Refresh` button located above the `Runs history` section.
   ![Runs history](LogicApps/Logic/10.png)
 
@@ -399,7 +348,7 @@ In this section, we will create a Logic App to respond to each event being strea
 
 ## Enriching the Event Payload
 
-1. x
+1. We will now deploy a version of the Logic App that will enrich the payload from the Event Hub and store it in our Cosmos DB collection.
     ```sh
     # __LocalHost__
     printf -v __getCosmosDBAccessKey '%q ' \
@@ -423,6 +372,7 @@ In this section, we will create a Logic App to respond to each event being strea
                 $(__param documentdb_access_key `eval $__getCosmosDBAccessKey`) \
             }"
     ```
+    Output:
     ```json
     {
       "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.2.arm",
@@ -431,28 +381,7 @@ In this section, we will create a Logic App to respond to each event being strea
       "properties": {
         "correlationId": "754065ee-cd8e-4d7c-9c56-e96a23c7ce24",
         "debugSetting": null,
-        "dependencies": [
-          {
-            "dependsOn": [
-              {
-                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/documentdb",
-                "resourceGroup": "StreamerCLI",
-                "resourceName": "documentdb",
-                "resourceType": "Microsoft.Web/connections"
-              },
-              {
-                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
-                "resourceGroup": "StreamerCLI",
-                "resourceName": "eventhubs",
-                "resourceType": "Microsoft.Web/connections"
-              }
-            ],
-            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
-            "resourceGroup": "StreamerCLI",
-            "resourceName": "CaptureEvents",
-            "resourceType": "Microsoft.Logic/workflows"
-          }
-        ],
+        "dependencies": [ ... ],
         "duration": "PT6.0503344S",
         "mode": "Incremental",
         "onErrorDeployment": null,
@@ -471,81 +400,9 @@ In this section, we will create a Logic App to respond to each event being strea
           }
         ],
         "outputs": null,
-        "parameters": {
-          "connections_documentdb_name": {
-            "type": "String",
-            "value": "documentdb"
-          },
-          "connections_eventhubs_name": {
-            "type": "String",
-            "value": "eventhubs"
-          },
-          "documentdb_access_key": {
-            "type": "SecureString"
-          },
-          "documentdb_account_name": {
-            "type": "String",
-            "value": "streamercli"
-          },
-          "documentdb_collection_name": {
-            "type": "String",
-            "value": "captured"
-          },
-          "documentdb_db_name": {
-            "type": "String",
-            "value": "events"
-          },
-          "eventhubs_hub_connection_string": {
-            "type": "SecureString"
-          },
-          "eventhubs_hub_name": {
-            "type": "String",
-            "value": "cli"
-          },
-          "workflows_parent_location": {
-            "type": "String",
-            "value": "eastus2"
-          },
-          "workflows_parent_name": {
-            "type": "String",
-            "value": "CaptureEvents"
-          }
-        },
+        "parameters": { ... },
         "parametersLink": null,
-        "providers": [
-          {
-            "id": null,
-            "namespace": "Microsoft.Web",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "connections"
-              }
-            ]
-          },
-          {
-            "id": null,
-            "namespace": "Microsoft.Logic",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "workflows"
-              }
-            ]
-          }
-        ],
+        "providers": [ ... ],
         "provisioningState": "Succeeded",
         "template": null,
         "templateHash": "8927459570445292905",
@@ -556,7 +413,6 @@ In this section, we will create a Logic App to respond to each event being strea
       "type": null
     }
     ```
-
 
 1. Feel free to inspect the recent execution via the `Runs history` section of the `Overview` blade. Remember, if the `Runs history` isn't showing any activity, click the `Refresh` button located above the `Runs history` section.
   ![Runs history](LogicApps/Enrich/17.png)

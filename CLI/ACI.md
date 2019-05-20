@@ -7,7 +7,7 @@ Return to [Getting Started with Azure CLI](ReadMe.md).
 
 
 
-In this section, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Git client and Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local versions, feel free to do so.
+In this section, we will deploy the streamer app into Azure to run in Container Instances. In order to do so, we will need to make sure we have an active Docker installation that we can use. The instructions below assume that you don't have either installed; if you already have these tools installed and prefer to use the local installation, feel free to do so.
 
 **Section Outline**
 1. [Creating the Staging VM](#creating-the-staging-vm)
@@ -23,7 +23,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 ## Creating the Staging VM
 
-1. x
+1. Create the virtual machine which we will deploy our streaming app from.
     ```sh
     # __LocalHost__
     vm=__virtual_machine_name__ # example: vm=staging
@@ -36,7 +36,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
         --generate-ssh-keys \
         --size Standard_D2s_v3
     ```
-
+    The output should look something like the following:
     ```json
     SSH key files '/Users/mannie/.ssh/id_rsa' and '/Users/mannie/.ssh/id_rsa.pub' have been generated under ~/.ssh to allow SSH access to the VM. If using machines without permanent storage, back up your keys to a safe location.
     {
@@ -60,7 +60,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 ## Configuring the VM
 
-1. SSH into your new VM via CLI using the login info provided at creation time:
+1. Start a new session and SSH into your new VM via CLI using the login info provided at creation time. This will allow us to have two active sessions: one one the local machine, and one on the Azure VM.
     ```sh
     # __LocalHost__
     vmIP=$(az vm list-ip-addresses --resource-group $group --query "[?virtualMachine.name=='$vm'].virtualMachine.network.publicIpAddresses[0].ipAddress" --output tsv)
@@ -74,19 +74,19 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     ```
     To confirm that you want to continue accessing the VM, type `yes` and hit `Enter`.
 
-1. x
+1. Set the base url of location of the source code.
     ```sh
     # __RemoteHost__
     src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
     ```
 
-1. x
+1. Download the script to install Docker and its dependencies, and run it using elevated privileges.
     ```sh
     # __RemoteHost__
     curl --silent --show-error $src/ACI/InstallDevTools.sh | sudo bash
     ```
 
-1. x
+1. Upon successful installation, log into your Azure account and set the subscription as before.
     ```sh
     # __RemoteHost__
     az login
@@ -166,7 +166,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 ## Deploying the Streamer App
 
-1. x
+1. Create an Azure Container Registry resource, giving it a globally unique name.
     ```sh
     # __LocalHost__
     acr=__globally_unique_name__ # example: acr=streamercli
@@ -177,6 +177,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
         --admin-enabled true \
         --location $location
     ```
+    Output:
     ```json
     {
       "adminUserEnabled": true,
@@ -199,7 +200,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     }
     ```
 
-1. x
+1. From our Azure VM, perform a docker login to the registry we just created in the previous steps.
     ```sh
     # __RemoteHost__
     group=__name_of_your_resource_group__ # example: group=StreamerCLI
@@ -220,14 +221,14 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     Login Succeeded
     ```
 
-1. x
+1. Push the Docker image of our app into our ACR so that we can deploy our containerized app from there.
     ```sh
     # __RemoteHost__
     repository=$registry/$app
     sudo docker tag $app $repository
     sudo docker push $repository
     ```
-
+    Output:
     ```
     The push refers to repository [streamercli.azurecr.io/streamer]
     d9912d906116: Pushed
@@ -240,13 +241,13 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     604cbde1a4c8: Pushing [=======>                                           ]  15.24MB/101.7MB
     ```
 
-1. x
+1. Once the image has been pushed into our registry, we can confirm the update by showing the manifest using the following commands:
     ```sh
     # __LocalHost__
     repository=$(az acr repository list --name $acr --query [0] --output tsv)
     az acr repository show-manifests --name $acr --repository $repository --detail
     ```
-
+    Output:
     ```json
     [
       {
@@ -270,7 +271,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     ]
     ```
 
-1. x
+1. We will now create a Container Instances resource which will run our containerized app from the registry.
     ```sh
     # __LocalHost__
     az container create \
@@ -285,7 +286,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
         --memory 0.5 \
         --ip-address Private
     ```
-
+    Output:
     ```json
     {
       "containers": [ ... ],
@@ -312,7 +313,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
     }
     ```
 
-1. x
+1. Once the ACI has deployed successfully, it will automatically start executing. View the logs by running the following command.
     ```sh
     # __LocalHost__
     az container logs --name $repository --resource-group $group --follow

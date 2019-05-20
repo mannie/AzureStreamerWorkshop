@@ -21,7 +21,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 ## Creating an Event Hub
 
-1. x
+1. Create your Event Hubs namespace, giving it a globally unique name.
     ```sh
     # __LocalHost__
     namespace=__globally_unique_name__ # example: namespace=streamercli
@@ -31,6 +31,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
         --location $location \
         --sku Basic
     ```
+    Output:
     ```json
     {
       "createdAt": "2019-05-03T20:45:49.190000+00:00",
@@ -55,7 +56,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
     }
     ```
 
-1. x
+1. Create the Event Hub into which we will stream our events.
     ```sh
     # __LocalHost__
     eventhub=__name__ # example: eventhub=cli
@@ -65,6 +66,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
         --name $eventhub \
         --message-retention 1
     ```
+    Output:
     ```json
     {
       "captureDescription": null,
@@ -95,7 +97,41 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 ## Updating the Streamer App
 
-1. Update your `Dockerfile` with the info for your Event Hub. `SASPolicyName` is the name of the SAS Policy whose value we copied (`RootManageSharedAccessKey`), while `SASPolicyKey` is the value we copied. `EventHubNamespace` and `EventHubPath` are the globally unique name of the Event Hub Namespace and that of the Event Hub, respectively. Your `Dockerfile` should look something like this; only the lines beginning with `ENV` should have changed.
+1. Update your `Dockerfile` with the info for your Event Hub. `SASPolicyName` is the name of the SAS Policy we would like to use, while `SASPolicyKey` is the key value of said SAS Policy. `EventHubNamespace` and `EventHubPath` are the globally unique name of the Event Hub Namespace and that of the Event Hub, respectively.
+
+  The following set of commands ensure that the appropriate areas in the Dockerfile are updated. We first establish the Event Hub namespace and path that we want to stream to. We then capture commands to obtain the SAS Policy info into variables; this is for readability since embedding the command directly into the `sed` regex would be a little difficult to read. We then the define a function which returns the regex to find a replace specified key-value pairs using `sed`. Lastly, update the update the ENV variables in the Dockerfile.
+
+  ```sh
+  # __RemoteHost__
+  namespace=__eventhub_namespace__ # example: namespace=streamercli
+  eventhub=__path_to_eventhub__ # example: eventhub=cli
+
+  printf -v __getSharedPolicy '%q ' \
+      az eventhubs namespace authorization-rule list \
+          --namespace-name $namespace \
+          --resource-group $group \
+          --query "[?contains(rights, 'Send')].name" \
+          --output tsv
+
+  printf -v __getAccessKey '%q ' \
+      az eventhubs namespace authorization-rule keys list \
+          --name `eval $__getSharedPolicy` \
+          --namespace-name $namespace \
+          --resource-group $group \
+          --query primaryKey \
+          --output tsv
+
+  function __env { echo "s ($1=.*\")(.*)(\") \1$2\3 "; } # Using [space] as the sed regex delimiter.
+
+  cat Dockerfile | \
+      sed -E "$(__env SASPolicyName `eval $__getSharedPolicy`)" | \
+      sed -E "$(__env SASPolicyKey `eval $__getAccessKey`)" | \
+      sed -E "$(__env EventHubNamespace $namespace)" | \
+      sed -E "$(__env EventHubPath $eventhub)" > \
+          Dockerfile
+  ```
+
+  Your `Dockerfile` should look something like this; only the lines beginning with `ENV` should have changed.
     ```
     FROM swift
     ENV SASPolicyName="RootManageSharedAccessKey"
@@ -107,37 +143,8 @@ In this section, we will create and configure our Event Hub to ingest data from 
     CMD swift package clean
     CMD swift run
     ```
-    ```sh
-    # __RemoteHost__
-    namespace=__eventhub_namespace__ # example: namespace=streamercli
-    eventhub=__path_to_eventhub__ # example: eventhub=cli
 
-    printf -v __getSharedPolicy '%q ' \
-        az eventhubs namespace authorization-rule list \
-            --namespace-name $namespace \
-            --resource-group $group \
-            --query "[?contains(rights, 'Send')].name" \
-            --output tsv
-
-    printf -v __getAccessKey '%q ' \
-        az eventhubs namespace authorization-rule keys list \
-            --name `eval $__getSharedPolicy` \
-            --namespace-name $namespace \
-            --resource-group $group \
-            --query primaryKey \
-            --output tsv
-
-    function __env { echo "s ($1=.*\")(.*)(\") \1$2\3 "; } # Using [space] as the sed regex delimiter.
-
-    cat Dockerfile | \
-        sed -E "$(__env SASPolicyName `eval $__getSharedPolicy`)" | \
-        sed -E "$(__env SASPolicyKey `eval $__getAccessKey`)" | \
-        sed -E "$(__env EventHubNamespace $namespace)" | \
-        sed -E "$(__env EventHubPath $eventhub)" > \
-            Dockerfile
-    ```
-
-1. x
+1. To confirm your changes to the Dockerfile, run the `cat` command.
     ```sh
     # __RemoteHost__
     cat Dockerfile
@@ -163,7 +170,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
     sudo docker tag $app $repository
     sudo docker push $repository
     ```
-
+    Output:
     ```
     The push refers to repository [streamercli.azurecr.io/streamer]
     7c628f71b988: Pushed
@@ -177,7 +184,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
     latest: digest: sha256:c3e67ac963d2f2cd5b82bc3405de6aa799cd349c2c1db5e32285f828b41b815a size: 1994
     ```
 
-1. x
+1. Your active ACI will not automatically restart; we will have to restart the contain group using the `az container restart` command.
     ```sh
     # __LocalHost__
     az container restart --name $repository --resource-group $group

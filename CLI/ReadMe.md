@@ -29,12 +29,12 @@ echo "¯\_(ツ)_/¯"
 
 
 
-1. x
+1. To get started, we will need to issue the `az login` command to access your Azure account and associated resources.
     ```sh
     # __LocalHost__
     az login
     ```
-
+    After opening the URL issued to complete the login process, you will receive a message with a list of your available subscriptions in your account.
     ```json
     Note, we have launched a browser for you to login. For old experience with device code, use "az login --use-device-code"
     You have logged in. Now let us find all the subscriptions to which you have access...
@@ -54,22 +54,20 @@ echo "¯\_(ツ)_/¯"
     ]  
     ```
 
-1. x
+1. Select the subscription you would like to use for the rest of the workshop.
     ```sh
     # __LocalHost__
     az account set --subscription __subscription_name_or_id__ # example: az account set --subscription AIRS
     ```
 
-1. x
+1. Set the variables for the resource group and location.  We will reuse these values in later parts of the workshop, so ensure that the specified location is available for all the resources in the workshop.  For a list of the available locations, see https://azure.microsoft.com/en-us/global-infrastructure/services/?products=all.
     ```sh
     # __LocalHost__
     group=__resource_group_name__ # example: group=StreamerCLI
     location=__location_for_your_azure_resources__ # example: location=eastus2
     ```
 
-    https://azure.microsoft.com/en-us/global-infrastructure/services/?products=all
-
-1. x.
+1. Create the resource group into which will be used when deploying our resources.
     ```sh
     # __LocalHost__
     az group create --name $group --location $location

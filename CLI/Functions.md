@@ -23,7 +23,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 
 ## Creating the Function App
 
-1. x
+1. Create a storage account in Azure, giving it a globally unique name. This will be used to store logs and other data, and is a pre-requisite for us to create a Functions App.
     ```sh
     # __LocalHost__
     storage=__globally_unique_name__ # example: storage=streamerclistorage
@@ -34,6 +34,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
         --location $location \
         --sku Standard_GRS
     ```
+    Output:
     ```json
     {
       "accessTier": "Hot",
@@ -66,7 +67,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     }
     ```
 
-1. x
+1. Add the App Insights extension before creating an App Insights resource in Azure.
     ```sh
     # __LocalHost__
     az extension add --name application-insights
@@ -77,6 +78,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
         --location $location \
         --resource-group $group
     ```
+    Output:
     ```json
     {
       "appId": "bd97c007-1b12-4b07-b784-123e75168fdc",
@@ -102,7 +104,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     }
     ```
 
-1. x
+1. Create a Functions App, giving it a globally unique name.
     ```sh
     # __LocalHost__
     functionapp=__globally_unique_name__ #example: functionapp=streamercli-utils
@@ -114,7 +116,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
         --consumption-plan-location $location \
         --runtime dotnet
     ```
-
+    Output:
     ```json
     {
       "availabilityState": "Normal",
@@ -164,12 +166,13 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     }
     ```
 
-1. x
+1. Use the core development tools to create a new Functions App project.
     ```sh
     # __RemoteHost__
     functionsDev=__name_of_directory_for_functions_development__ # example: functionsDev=StreamerUtils
     cd && func init $functionsDev --csx
     ```
+    Output:
     ```
     Writing .gitignore
     Writing host.json
@@ -177,20 +180,22 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     Writing /home/mannie/StreamerUtils/.vscode/extensions.json
     ```
 
-1. x
+1. Change directory into our newly created folder and list the contents therein.
     ```sh
     # __RemoteHost__
     cd $functionsDev && ls
     ```
+    Output:
     ```
     host.json  local.settings.json
     ```
 
-1. x
+1. Create a new Function called `HttpTrigger1`, using the `HttpTrigger` template, for development using C# Script.
     ```sh
     # __RemoteHost__
     func new --name HttpTrigger1 --template HttpTrigger --csx
     ```
+    Output:
     ```
     Select a template: HttpTrigger
     Function name: [HttpTrigger] Writing /home/mannie/StreamerUtils/HttpTrigger1/readme.md
@@ -199,17 +204,18 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     The function "HttpTrigger1" was created successfully from the "HttpTrigger" template.
     ```
 
-1. x
+1. Update the contents of the `run.csx` file (where the code of the Function lives) for the newly created `HttpTrigger1` function with the provided code. You can confirm the change before and after the command via the `cat` command.
     ```sh
     # __RemoteHost__
     curl --silent --show-error --output HttpTrigger1/run.csx $src/Functions/Function.csx
     ```   
 
-1. x
+1. Open a new session so that we can run/debug the function locally (local is relative, in this case to the Azure VM).
     ```sh
     # __RemoteHost__
     func host start --build --csx
     ```
+    Output:
     ```
     ...
     Hosting environment: Production
@@ -224,22 +230,24 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
     ...
     ```
 
-1. x
+1. Update `developmentAPI` to that it contains the localhost URI for our function, and test using `curl`.
     ```sh
     # __RemoteHost__
     developmentAPI=__url_to_localhost__ # example: developmentAPI=http://localhost:7071/api/HttpTrigger1
     echo $(curl --silent --show-error "$developmentAPI?timestamp=1557169059")
     ```
+    Output:
     ```
     "2019-05-06T18:57:39Z"
     ```
 
-1. x
+1. Publish the project into our Functions App in Azure.
     ```sh
     # __RemoteHost__
     functionapp=__name_of_function_app_in_azure__ # example: functionapp=streamercli-utils
     func azure functionapp publish $functionapp
     ```
+    Output:
     ```
     Getting site publishing info...
     Creating archive for current directory...
@@ -251,16 +259,18 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
         HttpTrigger1 - [httpTrigger]
             Invoke url: https://streamercli-utils.azurewebsites.net/api/httptrigger1?code=asfOR34rweWrBS264qTmwU9JHSnAeXtBBC39H4DJa1wD9Gy3neF70Q==
     ```
+    If your output doesn't yield a URL to invoke for your function, try publishing again or try the following command:
     ```
     # __RemoteHost__
     func azure functionapp list-functions $functionapp --show-keys
     ```
 
-1. x
+1. Once you have the URL for the function in Azure, update `productionAPI` and use `curl` in a similar fashion to before to confirm that everything works as expected.
     ```sh
     productionAPI=__invoke_url_shown_after_publishing__ # example: productionAPI=productionURL=https://streamercli-utils.azurewebsites.net/api/httptrigger1?code=asfOR34rweWrBS264qTmwU9JHSnAeXtBBC39H4DJa1wD9Gy3neF70Q==
     echo $(curl --silent --show-error "$productionAPI&timestamp=1557169059")
     ```
+    Output:
     ```
     "2019-05-06T18:57:39Z"
     ```
@@ -273,7 +283,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 
 ## Updating the Logic App
 
-1. x
+1. The `CaptureEvents.3.arm.json` ARM template includes the changes necessary to accomodate the use of our newly created Function. Deploy this Logic App, pointing it to your instance of the Functions App.
     ```sh
     # __LocalHost__
     az group deployment create \
@@ -291,6 +301,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
                 $(__param functions_utils_name $functionapp) \
             }"
     ```
+    Output:
     ```json
     {
       "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Resources/deployments/CaptureEvents.3.arm",
@@ -299,129 +310,15 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
       "properties": {
         "correlationId": "03fca585-10d3-4ded-9a4d-3c48667b1a35",
         "debugSetting": null,
-        "dependencies": [
-          {
-            "dependsOn": [
-              {
-                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/documentdb",
-                "resourceGroup": "StreamerCLI",
-                "resourceName": "documentdb",
-                "resourceType": "Microsoft.Web/connections"
-              },
-              {
-                "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
-                "resourceGroup": "StreamerCLI",
-                "resourceName": "eventhubs",
-                "resourceType": "Microsoft.Web/connections"
-              }
-            ],
-            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
-            "resourceGroup": "StreamerCLI",
-            "resourceName": "CaptureEvents",
-            "resourceType": "Microsoft.Logic/workflows"
-          }
-        ],
+        "dependencies": [ ... ],
         "duration": "PT2.7533427S",
         "mode": "Incremental",
         "onErrorDeployment": null,
-        "outputResources": [
-          {
-            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Logic/workflows/CaptureEvents",
-            "resourceGroup": "StreamerCLI"
-          },
-          {
-            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/documentdb",
-            "resourceGroup": "StreamerCLI"
-          },
-          {
-            "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/connections/eventhubs",
-            "resourceGroup": "StreamerCLI"
-          }
-        ],
+        "outputResources": [ ... ],
         "outputs": null,
-        "parameters": {
-          "connections_documentdb_name": {
-            "type": "String",
-            "value": "documentdb"
-          },
-          "connections_eventhubs_name": {
-            "type": "String",
-            "value": "eventhubs"
-          },
-          "documentdb_access_key": {
-            "type": "SecureString"
-          },
-          "documentdb_account_name": {
-            "type": "String",
-            "value": "streamercli"
-          },
-          "documentdb_collection_name": {
-            "type": "String",
-            "value": "captured"
-          },
-          "documentdb_db_name": {
-            "type": "String",
-            "value": "events"
-          },
-          "eventhubs_hub_connection_string": {
-            "type": "SecureString"
-          },
-          "eventhubs_hub_name": {
-            "type": "String",
-            "value": "cli"
-          },
-          "functions_utils_externalid": {
-            "type": "String",
-            "value": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/StreamerCLI/providers/Microsoft.Web/sites/streamercli-utils"
-          },
-          "functions_utils_name": {
-            "type": "String",
-            "value": "streamercli-utils"
-          },
-          "workflows_parent_location": {
-            "type": "String",
-            "value": "eastus2"
-          },
-          "workflows_parent_name": {
-            "type": "String",
-            "value": "CaptureEvents"
-          }
-        },
+        "parameters": { ... },
         "parametersLink": null,
-        "providers": [
-          {
-            "id": null,
-            "namespace": "Microsoft.Web",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "connections"
-              }
-            ]
-          },
-          {
-            "id": null,
-            "namespace": "Microsoft.Logic",
-            "registrationState": null,
-            "resourceTypes": [
-              {
-                "aliases": null,
-                "apiVersions": null,
-                "locations": [
-                  "eastus2"
-                ],
-                "properties": null,
-                "resourceType": "workflows"
-              }
-            ]
-          }
-        ],
+        "providers": [ ... ],
         "provisioningState": "Succeeded",
         "template": null,
         "templateHash": "17110812746765856905",
@@ -432,6 +329,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
       "type": null
     }
     ```
+    *Remember: it's your responsibility to ensure your understand what's happening here, so take the time to do so; ask questions if you need to.*
 
 1. Inspecting the logs for events processed after updating our Cosmos DB payload, we can see that a new `event.datetime` property exists.
   ![Runs history](Functions/Logic/20.png)
