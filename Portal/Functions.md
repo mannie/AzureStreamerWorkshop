@@ -41,41 +41,7 @@ After converting the `timestamp`, we will update our Logic App to invoke this ne
 1. Select `Webhook + API` and click `Create`. This will allow us to create a REST API that we can `GET` or `POST` to.
   ![Webhook + API](Functions/Function/6.png)
 
-1. Paste the following code into the editor and hit `Save`. Open the `Test` panel so that we can validate our API's behaviour after.
-    ```csx
-    #r "Newtonsoft.Json"
-
-    using System.Net;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Primitives;
-    using Newtonsoft.Json;
-
-    public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
-    {
-        log.LogInformation("C# HTTP trigger function processed a request.");
-
-        // Obtain the "timestamp" query param from the URL: "http://...?timestamp=1552053470"
-        string value = req.Query["timestamp"];
-
-        // If we don't have a "timestamp" query param, try and read the request's body to find one
-        // { "timestamp" : 1552053470, ... }
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-        dynamic data = JsonConvert.DeserializeObject(requestBody);
-        value = value ?? data?.timestamp;
-
-        // Convert the "timestamp" from a string to an int
-        var timestamp = Convert.ToInt64(value);
-
-        // Convert the offset to a DateTime object.
-        DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(timestamp);
-        DateTime dateTime = dateTimeOffset.UtcDateTime;
-
-        // Return the human readable dateTime in the response body.
-        return dateTime != null
-            ? (ActionResult)new OkObjectResult(dateTime)
-            : new BadRequestObjectResult(null);
-    }
-    ```
+1. Paste the code from the [Function.csx](../CLI/Functions/Function.csx) file into the editor and hit `Save`. Open the `Test` panel so that we can validate our API's behaviour after.
     ![Code](Functions/Function/7.png)
 
 1. Set the HTTP method to `POST` and the request body to `{ "timestamp" : 1552053470 }`. The code also supports `GET`; feel free to experiement a little with the available options. Click `Run` to execute the function with the provided params; you should see the string dateTime along with some additional logs.

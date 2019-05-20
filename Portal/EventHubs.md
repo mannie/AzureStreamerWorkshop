@@ -88,7 +88,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
 
 1. Push your updated image up to the container registry. `$registry` should already contain the address to your registy; if not, feel free to update it accordingly.
     ```sh
-    registry=address.to.registry # example streamer.azurecr.io
+    registry=__address_to_registry__ # example streamer.azurecr.io
     sudo docker tag streamer $registry/streamer
     sudo docker push $registry/streamer
     ```

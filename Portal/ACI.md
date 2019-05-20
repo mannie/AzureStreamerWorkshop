@@ -54,7 +54,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 1. SSH into your new VM via CLI using the login info provided at creation time:
     ```sh
-    ssh $user@$hostip # example mannie@123.45.67.89
+    ssh __user__@__ip_address_to_azure_vm__ # example mannie@123.45.67.89
     ```
     You will receive a message (similar to this) asking you to confirm that you want to connect to the VM.
     ```
@@ -66,7 +66,8 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 1. x. You will be prompted for your password and for confirmation; enter it and hit `Enter`.
     ```sh
-    curl -s https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/Portal/ACI/InstallDevTools.sh | sudo bash
+    script=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/Portal/ACI/InstallDevTools.sh
+    curl --silent --show-error $script | sudo bash
     ```  
 
 
