@@ -84,11 +84,11 @@ In this section, we will create and configure our Event Hub to ingest data from 
       endpoint	https://streamer.servicebus.windows.net/cli
       name		deposit
     ```
-    If the value of the endpoint is `n/a`, ensure that the `ENV` variables in your `Dockerfile` are set correctly.
+    If the value of the endpoint is still `n/a`, ensure that the `ENV` variables in your `Dockerfile` are set correctly.
 
 1. Push your updated image up to the container registry. `$registry` should already contain the address to your registy; if not, feel free to update it accordingly.
     ```sh
-    registry=address.to.registry # example streamer.azurecr.io
+    registry=__address_to_registry__ # example streamer.azurecr.io
     sudo docker tag streamer $registry/streamer
     sudo docker push $registry/streamer
     ```
@@ -106,7 +106,7 @@ In this section, we will create and configure our Event Hub to ingest data from 
     latest: digest: sha256:b3c51a74aaecfdec905822e567bab707f1d6873e940af9cd85e8342fe386867a size: 1993
     ```
 
-1. You Container Instance will automatically restart, and start executing the updated image. To confirm, head on over into the `Logs` section of your Container Instance. You should see your update stream info therein.
+1. You will need to restart your container group via the portal in order to start executing the updated image. To confirm that all the changes are being picked up, head on over into the `Logs` section of your Container Instance. You should see your update stream info therein.
   ![Log](EventHubs/8.png)
 
 1. Your Event Hub should also be receiving these events. Confirm by heading over to the Event Hub resource within the Event Hub Namespace; the `Overview` section contains some charts showing the number of requests coming in.

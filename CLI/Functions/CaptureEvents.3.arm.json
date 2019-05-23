@@ -1,0 +1,249 @@
+{
+    "$schema" : "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion" : "1.0.0.0",
+    "variables" : {},
+    "parameters" : {
+        "workflows_parent_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "workflows_parent_location" : {
+            "defaultValue" : "[resourceGroup().location]",
+            "type" : "String"
+        },
+        "eventhubs_hub_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "eventhubs_hub_connection_string" : {
+            "defaultValue" : null,
+            "type" : "SecureString"
+        },
+        "documentdb_account_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "documentdb_db_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "documentdb_collection_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "documentdb_access_key" : {
+            "defaultValue" : null,
+            "type" : "SecureString"
+        },
+        "functions_utils_name" : {
+            "defaultValue" : null,
+            "type" : "String"
+        },
+        "functions_utils_externalid" : {
+            "defaultValue" : "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('functions_utils_name'))]",
+            "type" : "String"
+        },
+        "connections_documentdb_name" : {
+            "defaultValue" : "documentdb",
+            "type" : "String"
+        },
+        "connections_eventhubs_name" : {
+            "defaultValue" : "eventhubs",
+            "type" : "String"
+        }
+    },
+    "resources" : [
+        {
+            "type" : "Microsoft.Web/connections",
+            "apiVersion" : "2016-06-01",
+            "name" : "[parameters('connections_eventhubs_name')]",
+            "location" : "[parameters('workflows_parent_location')]",
+            "properties" : {
+                "displayName" : "[concat('cxn_', parameters('workflows_parent_name'), '_',  parameters('eventhubs_hub_name'))]",
+                "api" : {
+                    "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('workflows_parent_location'), '/managedApis/', parameters('connections_eventhubs_name'))]"
+                },
+                "parameterValues" : {
+                    "connectionString" : "[parameters('eventhubs_hub_connection_string')]"
+                }
+            }
+        },
+        {
+            "type" : "Microsoft.Web/connections",
+            "apiVersion" : "2016-06-01",
+            "name" : "[parameters('connections_documentdb_name')]",
+            "location" : "[parameters('workflows_parent_location')]",
+            "properties" : {
+                "displayName" : "[concat('cxn_', parameters('workflows_parent_name'), '_',  parameters('documentdb_account_name'), '_',  parameters('documentdb_db_name'), '_',  parameters('documentdb_collection_name'))]",
+                "api" : {
+                    "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('workflows_parent_location'), '/managedApis/', parameters('connections_documentdb_name'))]"
+                },
+                "parameterValues" : {
+                    "accessKey" : "[parameters('documentdb_access_key')]",
+                    "databaseAccount" : "[parameters('documentdb_account_name')]"
+                }
+            }
+        },
+        {
+            "type" : "Microsoft.Logic/workflows",
+            "apiVersion" : "2017-07-01",
+            "name" : "[parameters('workflows_parent_name')]",
+            "location" : "[parameters('workflows_parent_location')]",
+            "dependsOn" : [
+                "[resourceId('Microsoft.Web/connections', parameters('connections_documentdb_name'))]",
+                "[resourceId('Microsoft.Web/connections', parameters('connections_eventhubs_name'))]"
+            ],
+            "properties" : {
+                "state" : "Enabled",
+                "definition" : {
+                    "$schema" : "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion" : "1.0.0.0",
+                    "parameters" : {
+                        "$connections" : {
+                            "defaultValue" : {},
+                            "type" : "Object"
+                        }
+                    },
+                    "triggers" : {
+                        "When_events_are_available_in_Event_Hub" : {
+                            "recurrence" : {
+                                "frequency" : "Second",
+                                "interval" : 1
+                            },
+                            "splitOn" : "@triggerBody()",
+                            "type" : "ApiConnection",
+                            "inputs" : {
+                                "host" : {
+                                    "connection" : {
+                                        "name" : "@parameters('$connections')['eventhubs']['connectionId']"
+                                    }
+                                },
+                                "method" : "get",
+                                "path" : "[concat('/@{encodeURIComponent(''', parameters('eventhubs_hub_name'), ''')}/events/batch/head')]",
+                                "queries" : {
+                                    "consumerGroupName" : "$Default",
+                                    "contentType" : "application/json",
+                                    "maximumEventsCount" : 50
+                                }
+                            }
+                        }
+                    },
+                    "actions" : {
+                        "Initialize_variable" : {
+                            "runAfter" : {},
+                            "type" : "InitializeVariable",
+                            "inputs" : {
+                                "variables" : [
+                                    {
+                                        "name" : "ID",
+                                        "type" : "String",
+                                        "value" : "@{triggerBody()?['SystemProperties']?['SequenceNumber']}-@{triggerBody()?['SystemProperties']?['Offset']}"
+                                    }
+                                ]
+                            }
+                        },
+                        "Parse_JSON" : {
+                            "runAfter" : {
+                                "Initialize_variable" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "ParseJson",
+                            "inputs" : {
+                                "content" : "@triggerBody()?['ContentData']",
+                                "schema" : {
+                                    "properties" : {
+                                        "current" : {
+                                            "type" : "integer"
+                                        },
+                                        "initial" : {
+                                            "type" : "integer"
+                                        },
+                                        "name" : {
+                                            "type" : "string"
+                                        },
+                                        "previous" : {
+                                            "type" : "integer"
+                                        },
+                                        "timestamp" : {
+                                            "type" : "integer"
+                                        }
+                                    },
+                                    "type" : "object"
+                                }
+                            }
+                        },
+                        "HttpTrigger1" : {
+                            "runAfter" : {
+                                "Parse_JSON" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "Function",
+                            "inputs" : {
+                                "body" : {
+                                    "timestamp" : "@body('Parse_JSON')?['timestamp']"
+                                },
+                                "function" : {
+                                    "id" : "[concat(parameters('functions_utils_externalid'), '/functions/HttpTrigger1')]"
+                                },
+                                "method" : "POST"
+                            }
+                        },
+                        "Compose" : {
+                            "runAfter" : {
+                                "HttpTrigger1" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "Compose",
+                            "inputs" : {
+                                "event" : "@addProperty(triggerBody()?['ContentData'], 'datetime', body('HttpTrigger1'))",
+                                "id" : "@variables('ID')",
+                                "properties" : "@triggerBody()?['Properties']"
+                            }
+                        },
+                        "Create_or_update_document" : {
+                            "runAfter" : {
+                                "Compose" : [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type" : "ApiConnection",
+                            "inputs" : {
+                                "body" : "@outputs('Compose')",
+                                "headers" : {
+                                    "x-ms-documentdb-raw-partitionkey" : "\"@{body('Parse_JSON')?['name']}\""
+                                },
+                                "host" : {
+                                    "connection" : {
+                                        "name" : "@parameters('$connections')['documentdb']['connectionId']"
+                                    }
+                                },
+                                "method" : "post",
+                                "path" : "[concat('/dbs/@{encodeURIComponent(''', parameters('documentdb_db_name'), ''')}/colls/@{encodeURIComponent(''', parameters('documentdb_collection_name'), ''')}/docs')]"
+                            }
+                        }
+                    },
+                    "outputs" : {}
+                },
+                "parameters" : {
+                    "$connections" : {
+                        "value" : {
+                            "documentdb" : {
+                                "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('workflows_parent_location'), '/managedApis/', parameters('connections_documentdb_name'))]",
+                                "connectionId" : "[resourceId('Microsoft.Web/connections', parameters('connections_documentdb_name'))]",
+                                "connectionName" : "[parameters('connections_documentdb_name')]"
+                            },
+                            "eventhubs" : {
+                                "id" : "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('workflows_parent_location'), '/managedApis/', parameters('connections_eventhubs_name'))]",
+                                "connectionId" : "[resourceId('Microsoft.Web/connections', parameters('connections_eventhubs_name'))]",
+                                "connectionName" : "[parameters('connections_eventhubs_name')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

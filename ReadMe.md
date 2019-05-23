@@ -17,16 +17,23 @@ In this workshop, you will develop an end-to-end data streaming/processing solut
 * An active [Azure Subscription](https://azure.microsoft.com/en-us/free/).
 * An internet enabled computer.
 
-## Getting Started
-1. [Deploying the streaming app into Azure](ACI.md).
-1. [Ingesting events into Event Hubs](EventHubs.md).
-1. [Capturing events in Cosmos DB](LogicApps.md).
-1. [Enriching the event's payload](Functions.md).
-1. [Sharing our APIs with others](APIM.md).
-1. [Review and next steps](Review.md).
+### Before You Start
+* Ensure that you have access to command line interface (CLI) that is capable of [SSH tunneling](https://www.ssh.com/ssh/tunneling/). If your local CLI cannot SSH, feel free to use the [Azure Cloud Shell](https://shell.azure.com); follow these [instructions to set up your environment](CloudShell.md) if this is your first time using it.
+* Ensure that you have the Azure CLI `az` installed if you plan on working through the CLI path; follow these [instructions to install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). The Azure Cloud Shell has `az` readily available; this is a viable option if you prefer to not have `az` installed locally.
+* It may be worth preloading your API Management service (which will be required later in the workshop) as this service typically take a little while to deploy and provision; for more info on how to do so, see the relevant section for your chosen path:
+  * [Portal](Portal/APIM.md#creating-the-api-management-service);
+  * [CLI](CLI/APIM.md#creating-the-api-management-service).
 
-**Note**: it may be worth preloading your API Management service as this service typically take a little while to set up; for more info on how to create your API Management service, see [Creating the API Management Service](APIM.md#creating-the-api-management-service).
+### How would you like to complete the workshop?
+| Interface | Description | Level |
+| --- | --- | --- |
+| [Portal](Portal) | Use a combination of the Azure Portal and the CLI, where required, to work through the workshop. | Beginner |
+| [CLI](CLI) | Work through the workshop entirely via Command Line Interface; this assumes familiarity with the concepts presented in the preceding level. | Intermediate |
+
+
 
 ---
+
+
 
 ![Workshop](Workshop.gif)
