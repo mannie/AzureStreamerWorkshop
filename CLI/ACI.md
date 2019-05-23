@@ -77,7 +77,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 1. Set the base url of location of the source code.
     ```sh
     # __RemoteHost__
-    src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
+    src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/master/CLI
     ```
 
 1. Download the script to install Docker and its dependencies, and run it using elevated privileges.

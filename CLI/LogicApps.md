@@ -166,7 +166,7 @@ In this section, we will create a Logic App to respond to each event being strea
 1. Logic Apps are deployed into Azure using what are known as [Azure Resource Manager (ARM) templates](https://docs.microsoft.com/en-us/azure/azure-resource-manager). Specify the source from which we would like to obtain our ARM templates and define a utility function to help us generate the parameters required by the ARM template deployment command.
     ```sh
     # __LocalHost__
-    src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/CLI
+    src=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/master/CLI
     function __param { echo "'$1' : { 'value' : '$2' }"; }
     ```
 

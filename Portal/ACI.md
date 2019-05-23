@@ -66,7 +66,7 @@ In this section, we will deploy the streamer app into Azure to run in Container 
 
 1. x. You will be prompted for your password and for confirmation; enter it and hit `Enter`.
     ```sh
-    script=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/cli/Portal/ACI/InstallDevTools.sh
+    script=https://raw.githubusercontent.com/mannie/AzureStreamerWorkshop/master/Portal/ACI/InstallDevTools.sh
     curl --silent --show-error $script | sudo bash
     ```  
 
